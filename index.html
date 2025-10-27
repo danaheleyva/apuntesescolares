@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apuntes Pro - Plataforma Colaborativa</title>
+    
+    <!-- Carga de TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carga de Lucide Icons (para estrellas, iconos de usuario, etc.) -->
+    <!-- CAMBIO: Se usa la versión UMD (Universal Module Definition) de lucide para mejor compatibilidad con navegadores -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Fuente Inter (estilo moderno) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilo base con la fuente Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Ocultar secciones de página por defecto */
+        .page-section {
+            display: none;
+        }
+        /* Mostrar la sección activa */
+        .page-section.active {
+            display: block;
+        }
+        
+        /* Estilo para las estrellas de calificación */
+        .star-rating .lucide-star.filled {
+            fill: #f59e0b; /* color amarillo/ámbar */
+            color: #f59e0b;
+        }
+        .star-rating .lucide-star.empty {
+            color: #4b5563; /* color gris */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+
+    <!-- =========== Cabecera y Navegación =========== -->
+    <header class="bg-gray-800 shadow-lg sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo/Título -->
+                <div class="flex-shrink-0 flex items-center">
+                    <i data-lucide="book-marked" class="h-8 w-8 text-indigo-400"></i>
+                    <span class="font-bold text-2xl ml-2 text-white">Apuntes Pro</span>
+                </div>
+                
+                <!-- Navegación Principal -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white" data-page="inicio">Inicio</a>
+                        <a href="#" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white" data-page="buscar">Buscar</a>
+                        <a href="#" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white" data-page="subir">Subir Apuntes</a>
+                        <!-- El Panel de Moderación se muestra/oculta con JS -->
+                        <a href="#" id="nav-moderacion" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-red-400 hover:bg-gray-700 hover:text-red-300 hidden" data-page="moderacion">Panel de Moderación</a>
+                    </div>
+                </div>
+                
+                <!-- Perfil de Usuario -->
+                <div class="hidden md:block">
+                    <a href="#" class="nav-link p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" data-page="cuenta">
+                        <span class="sr-only">Ver perfil</span>
+                        <i data-lucide="user-circle-2" class="h-8 w-8"></i>
+                    </a>
+                </div>
+                
+                <!-- Menú Móvil (Hamburguesa) - Opcional, no implementado por simplicidad -->
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Abrir menú principal</span>
+                        <i data-lucide="menu" class="block h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- =========== Contenido Principal (SPA Simulada) =========== -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+
+        <!-- ===== 1. Página: INICIO ===== -->
+        <section id="page-inicio" class="page-section p-4">
+            <h1 class="text-3xl font-bold text-white mb-6">Bienvenido a Apuntes Pro</h1>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Columna: Apuntes Populares -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-indigo-400 mb-4">Apuntes Más Populares</h2>
+                    <div class="space-y-4">
+                        <!-- Card de Apunte -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl hover:bg-gray-700">
+                            <h3 class="font-bold text-lg text-white">Resumen Final de Cálculo Diferencial</h3>
+                            <div class="star-rating flex items-center my-2" data-rating="5">
+                                <!-- JS generará las estrellas aquí -->
+                            </div>
+                            <p class="text-sm text-gray-400">Ingeniería Civil • 2do Semestre • Cálculo Diferencial</p>
+                            <p class="text-xs text-gray-500 mt-1">Subido por @jgarcia</p>
+                        </div>
+                        <!-- Card de Apunte -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl hover:bg-gray-700">
+                            <h3 class="font-bold text-lg text-white">Guía Completa de Derecho Romano I</h3>
+                            <div class="star-rating flex items-center my-2" data-rating="4">
+                                <!-- JS generará las estrellas aquí -->
+                            </div>
+                            <p class="text-sm text-gray-400">Derecho • 1er Semestre • Derecho Romano I</p>
+                            <p class="text-xs text-gray-500 mt-1">Subido por @mlopez</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Columna: Apuntes Recientes -->
+                <div>
+                    <h2 class="text-2xl font-semibold text-teal-400 mb-4">Subidos Recientemente</h2>
+                    <div class="space-y-4">
+                        <!-- Card de Apunte -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl hover:bg-gray-700">
+                            <h3 class="font-bold text-lg text-white">Apuntes Anatomía: Sistema Óseo</h3>
+                            <div class="star-rating flex items-center my-2" data-rating="0">
+                                <!-- JS generará las estrellas aquí -->
+                            </div>
+                            <p class="text-sm text-gray-400">Medicina • 1er Año • Anatomía Humana</p>
+                            <p class="text-xs text-gray-500 mt-1">Subido por @aramos</p>
+                        </div>
+                        <!-- Card de Apunte -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl hover:bg-gray-700">
+                            <h3 class="font-bold text-lg text-white">Ejercicios Resueltos de Estática</h3>
+                            <div class="star-rating flex items-center my-2" data-rating="0">
+                                <!-- JS generará las estrellas aquí -->
+                            </div>
+                            <p class="text-sm text-gray-400">Ingeniería Civil • 3er Semestre • Estática</p>
+                            <p class="text-xs text-gray-500 mt-1">Subido por @jgarcia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 2. Página: BUSCAR/EXPLORAR ===== -->
+        <section id="page-buscar" class="page-section p-4">
+            <h1 class="text-3xl font-bold text-white mb-6">Explorar Apuntes</h1>
+            
+            <!-- Contenedor de Filtros y Resultados -->
+            <div class="flex flex-col md:flex-row gap-8">
+                
+                <!-- Columna de Filtros -->
+                <aside class="w-full md:w-1/3 lg:w-1/4 bg-gray-800 p-6 rounded-lg shadow-lg h-fit">
+                    <h2 class="text-xl font-semibold mb-4">Filtros de Búsqueda</h2>
+                    <form id="search-form" class="space-y-4">
+                        <div>
+                            <label for="search-keyword" class="block text-sm font-medium text-gray-300">Palabra clave o #etiqueta</label>
+                            <input type="text" id="search-keyword" placeholder="#Integrales, #Contratos..." class="mt-1 w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="search-carrera" class="block text-sm font-medium text-gray-300">Carrera / Facultad</label>
+                            <select id="search-carrera" class="mt-1 w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Todas las carreras</option>
+                                <option value="ing-civil">Ingeniería Civil</option>
+                                <option value="medicina">Medicina</option>
+                                <option value="derecho">Derecho</option>
+                                <option value="arte">Historia del Arte</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="search-semestre" class="block text-sm font-medium text-gray-300">Semestre / Año</label>
+                            <select id="search-semestre" class="mt-1 w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Todos</option>
+                                <option value="1">1er Semestre / Año</option>
+                                <option value="2">2do Semestre / Año</option>
+                                <option value="3">3er Semestre / Año</option>
+                                <option value="4">4to Semestre / Año</option>
+                                <option value="5">5to+</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="search-asignatura" class="block text-sm font-medium text-gray-300">Asignatura / Materia</label>
+                            <input type="text" id="search-asignatura" placeholder="Ej: Cálculo Diferencial" class="mt-1 w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="search-profesor" class="block text-sm font-medium text-gray-300">Profesor (Opcional)</label>
+                            <input type="text" id="search-profesor" placeholder="Ej: Dr. Pérez" class="mt-1 w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                            <i data-lucide="search" class="inline-block h-4 w-4 mr-1"></i>
+                            Buscar
+                        </button>
+                    </form>
+                </aside>
+                
+                <!-- Columna de Resultados -->
+                <div class="w-full md:w-2/3 lg:w-3/4">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-gray-400">Mostrando 3 resultados</span>
+                        <select id="sort-by" class="p-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="popular">Ordenar por: Mejor Calificados</option>
+                            <option value="recent">Ordenar por: Más Recientes</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Grid de Resultados -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Card de Resultado -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Resumen Final de Cálculo Diferencial</h3>
+                                <div class="star-rating flex items-center my-2" data-rating="5">
+                                    <!-- JS generará las estrellas aquí -->
+                                </div>
+                                <p class="text-sm text-gray-400">Ingeniería Civil • 2do Semestre • Cálculo Diferencial</p>
+                                <p class="text-xs text-gray-500 mt-1">Prof: Dra. Ana Torres</p>
+                                <p class="text-xs text-gray-500 mt-1">Subido por @jgarcia</p>
+                                <div class="mt-2 space-x-2">
+                                    <span class="bg-indigo-900 text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">#Integrales</span>
+                                    <span class="bg-indigo-900 text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">#ExamenFinal</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <a href="#" class="text-sm text-indigo-400 hover:text-indigo-300">Ver Comentarios (8)</a>
+                                <button class="p-2 rounded-full hover:bg-gray-700">
+                                    <i data-lucide="bookmark" class="h-5 w-5 text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Card de Resultado -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Guía Completa de Derecho Romano I</h3>
+                                <div class="star-rating flex items-center my-2" data-rating="4">
+                                    <!-- JS generará las estrellas aquí -->
+                                </div>
+                                <p class="text-sm text-gray-400">Derecho • 1er Semestre • Derecho Romano I</p>
+                                <p class="text-xs text-gray-500 mt-1">Subido por @mlopez</p>
+                                <div class="mt-2 space-x-2">
+                                    <span class="bg-indigo-900 text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">#Contratos</span>
+                                    <span class="bg-indigo-900 text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">#Historia</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <a href="#" class="text-sm text-indigo-400 hover:text-indigo-300">Ver Comentarios (5)</a>
+                                <button class="p-2 rounded-full hover:bg-gray-700 text-indigo-400">
+                                    <i data-lucide="bookmark" class="h-5 w-5" style="fill: currentColor;"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card de Resultado -->
+                        <div class="bg-gray-800 rounded-lg shadow-md p-4 transition hover:shadow-xl flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Apuntes Anatomía: Sistema Óseo</h3>
+                                <div class="star-rating flex items-center my-2" data-rating="3">
+                                    <!-- JS generará las estrellas aquí -->
+                                </div>
+                                <p class="text-sm text-gray-400">Medicina • 1er Año • Anatomía Humana</p>
+                                <p class="text-xs text-gray-500 mt-1">Prof: Dr. Marco Solis</p>
+                                <p class="text-xs text-gray-500 mt-1">Subido por @aramos</p>
+                                <div class="mt-2 space-x-2">
+                                    <span class="bg-indigo-900 text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">#Huesos</span>
+                                    <span class="bg-indigo-900 text-indigo-300 text-xs font-medium px-2.5 py-0.5 rounded-full">#SistemaÓseo</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center">
+                                <a href="#" class="text-sm text-indigo-400 hover:text-indigo-300">Ver Comentarios (2)</a>
+                                <button class="p-2 rounded-full hover:bg-gray-700">
+                                    <i data-lucide="bookmark" class="h-5 w-5 text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 3. Página: SUBIR APUNTES ===== -->
+        <section id="page-subir" class="page-section p-4">
+            <h1 class="text-3xl font-bold text-white mb-6">Subir Apuntes</h1>
+            
+            <!-- Mensaje de éxito/moderación (oculto por defecto) -->
+            <div id="upload-success-message" class="hidden bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded-lg mb-6" role="alert">
+                <strong class="font-bold">¡Apunte subido con éxito!</strong>
+                <span class="block sm:inline">Tu apunte ha sido enviado y está ahora <span class="font-semibold">Pendiente de Moderación</span>. Recibirás una notificación cuando sea aprobado.</span>
+            </div>
+            
+            <div class="bg-gray-800 rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
+                <form id="upload-form" class="space-y-6">
+                    <!-- Título -->
+                    <div>
+                        <label for="upload-titulo" class="block text-sm font-medium text-gray-300 mb-1">Título del Apunte *</label>
+                        <input type="text" id="upload-titulo" placeholder="Ej: Resumen Completo de..." class="w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    
+                    <!-- Archivo -->
+                    <div>
+                        <label for="upload-file" class="block text-sm font-medium text-gray-300 mb-1">Archivo * (.pdf, .docx, .zip)</label>
+                        <input type="file" id="upload-file" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700" required>
+                    </div>
+                    
+                    <!-- Clasificación Obligatoria -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-700">
+                        <div>
+                            <label for="upload-carrera" class="block text-sm font-medium text-gray-300 mb-1">Carrera / Facultad *</label>
+                            <select id="upload-carrera" class="w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500" required>
+                                <option value="" disabled selected>Selecciona una carrera</option>
+                                <option value="ing-civil">Ingeniería Civil</option>
+                                <option value="medicina">Medicina</option>
+                                <option value="derecho">Derecho</option>
+                                <option value="arte">Historia del Arte</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="upload-semestre" class="block text-sm font-medium text-gray-300 mb-1">Semestre / Año *</label>
+                            <select id="upload-semestre" class="w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500" required>
+                                 <option value="" disabled selected>Selecciona un semestre</option>
+                                <option value="1">1er Semestre / Año</option>
+                                <option value="2">2do Semestre / Año</option>
+                                <option value="3">3er Semestre / Año</option>
+                                <option value="4">4to Semestre / Año</option>
+                                <option value="5">5to+</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="upload-asignatura" class="block text-sm font-medium text-gray-300 mb-1">Asignatura / Materia *</label>
+                            <input type="text" id="upload-asignatura" placeholder="Ej: Cálculo Diferencial" class="w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Clasificación Opcional -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-700">
+                        <div>
+                            <label for="upload-profesor" class="block text-sm font-medium text-gray-300 mb-1">Profesor (Opcional)</label>
+                            <input type="text" id="upload-profesor" placeholder="Ej: Dra. Ana Torres" class="w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="upload-tags" class="block text-sm font-medium text-gray-300 mb-1">Etiquetas (separadas por coma)</label>
+                            <input type="text" id="upload-tags" placeholder="#Integrales, #ExamenFinal, #Resumen" class="w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                    
+                    <!-- Botón de Envío -->
+                    <div class="text-right pt-4">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition text-lg">
+                            <i data-lucide="upload-cloud" class="inline-block h-5 w-5 mr-2"></i>
+                            Subir Apunte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ===== 4. Página: MI CUENTA / PERFIL ===== -->
+        <section id="page-cuenta" class="page-section p-4">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-white">Mi Cuenta</h1>
+                <div class="text-sm">
+                    <span class="text-gray-400">Rol actual: </span>
+                    <span id="current-role" class="font-semibold text-indigo-400">Usuario</span>
+                </div>
+            </div>
+            
+            <!-- Simulador de cambio de rol (SOLO PARA DEMO) -->
+            <div class="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700">
+                <h3 class="font-semibold mb-2 text-white">Simulador de Roles (Demo)</h3>
+                <p class="text-sm text-gray-400 mb-3">Usa esto para cambiar entre la vista de usuario y moderador.</p>
+                <div class="flex space-x-2">
+                    <button id="role-user" class="role-toggle-btn bg-indigo-600 text-white px-3 py-1 rounded-md text-sm font-medium">Ser Usuario</button>
+                    <button id="role-mod" class="role-toggle-btn bg-gray-600 text-white px-3 py-1 rounded-md text-sm font-medium">Ser Moderador</button>
+                </div>
+            </div>
+
+            <!-- Pestañas del Perfil -->
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <!-- Aquí irían las pestañas (Mis Apuntes, Mis Favoritos) -->
+                <h2 class="text-2xl font-semibold text-white mb-4">Mis Apuntes Subidos</h2>
+                
+                <div class="space-y-4">
+                    <!-- Apunte Aprobado -->
+                    <div class="bg-gray-700 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-white">Resumen Final de Cálculo Diferencial</h3>
+                            <p class="text-sm text-gray-400">Ingeniería Civil • 2do Semestre</p>
+                            <div class="star-rating flex items-center my-1" data-rating="5">
+                                <!-- JS generará las estrellas aquí -->
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-800 text-green-200">
+                                <i data-lucide="check-circle" class="h-4 w-4 mr-1.5"></i>
+                                Aprobado
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">Calificación: 4.8 (12 votos)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Apunte Pendiente -->
+                    <div class="bg-gray-700 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-white">Ejercicios Resueltos de Estática</h3>
+                            <p class="text-sm text-gray-400">Ingeniería Civil • 3er Semestre</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-yellow-800 text-yellow-200">
+                                <i data-lucide="clock" class="h-4 w-4 mr-1.5"></i>
+                                Pendiente de Moderación
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Apunte Rechazado -->
+                    <div class="bg-gray-700 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-white">Borrador Historia</h3>
+                            <p class="text-sm text-gray-400">Historia del Arte • 1er Semestre</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-red-800 text-red-200">
+                                <i data-lucide="x-circle" class="h-4 w-4 mr-1.5"></i>
+                                Rechazado
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">Motivo: "Apunte incompleto"</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <h2 class="text-2xl font-semibold text-white mb-4 mt-8">Mis Favoritos</h2>
+                <div class="space-y-4">
+                    <!-- Favorito Card -->
+                    <div class="bg-gray-700 rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-white">Guía Completa de Derecho Romano I</h3>
+                            <p class="text-sm text-gray-400">Derecho • 1er Semestre</p>
+                        </div>
+                        <button class="p-2 rounded-full text-indigo-400 hover:bg-gray-600">
+                            <i data-lucide="bookmark" class="h-5 w-5" style="fill: currentColor;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 5. Página: PANEL DE MODERACIÓN ===== -->
+        <section id="page-moderacion" class="page-section p-4">
+            <h1 class="text-3xl font-bold text-red-400 mb-6">Panel de Moderación</h1>
+            
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-white mb-4">Cola de Apuntes Pendientes (2)</h2>
+                
+                <div id="moderation-queue" class="space-y-6">
+                    
+                    <!-- Card de Moderación 1 -->
+                    <div class="moderation-card bg-gray-700 rounded-lg p-4 border border-gray-600">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Ejercicios Resueltos de Estática</h3>
+                                <p class="text-sm text-gray-400">Ingeniería Civil • 3er Semestre • Estática</p>
+                                <p class="text-xs text-gray-500 mt-1">Subido por @jgarcia • <a href="#" class="text-indigo-400 hover:underline">Ver Archivo</a></p>
+                            </div>
+                            <div class="flex space-x-2 mt-4 md:mt-0">
+                                <button class="btn-approve bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                                    <i data-lucide="check" class="inline-block h-4 w-4 mr-1"></i>
+                                    Aprobar
+                                </button>
+                                <button class="btn-reject bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                                    <i data-lucide="x" class="inline-block h-4 w-4 mr-1"></i>
+                                    Rechazar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="reject-reason-1" class="sr-only">Motivo de Rechazo</label>
+                            <input type="text" id="reject-reason-1" placeholder="Motivo de rechazo (opcional si se rechaza)" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-lg text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                    
+                    <!-- Card de Moderación 2 -->
+                    <div class="moderation-card bg-gray-700 rounded-lg p-4 border border-gray-600">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Resumen Sitema Nervioso</h3>
+                                <p class="text-sm text-gray-400">Medicina • 2do Año • Fisiología</p>
+                                <p class="text-xs text-gray-500 mt-1">Subido por @cvaldes • <a href="#" class="text-indigo-400 hover:underline">Ver Archivo</a></p>
+                            </div>
+                            <div class="flex space-x-2 mt-4 md:mt-0">
+                                <button class="btn-approve bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                                    <i data-lucide="check" class="inline-block h-4 w-4 mr-1"></i>
+                                    Aprobar
+                                </button>
+                                <button class="btn-reject bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                                    <i data-lucide="x" class="inline-block h-4 w-4 mr-1"></i>
+                                    Rechazar
+                                </button>
+                            </div>
+                        </div>
+                         <div class="mt-4">
+                            <label for="reject-reason-2" class="sr-only">Motivo de Rechazo</Flabel>
+                            <input type="text" id="reject-reason-2" placeholder="Motivo de rechazo (opcional si se rechaza)" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-lg text-white text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =========== Footer =========== -->
+    <footer class="bg-gray-800 mt-12">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+            &copy; 2025 Apuntes Pro. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <!-- =========== JavaScript =========== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Estado Simulado ---
+            let currentUserRole = 'usuario'; // 'usuario' o 'moderador'
+            let activePage = 'inicio';
+
+            // --- Selectores de Elementos ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pageSections = document.querySelectorAll('.page-section');
+            const navModeracion = document.getElementById('nav-moderacion');
+            const uploadForm = document.getElementById('upload-form');
+            const uploadSuccessMessage = document.getElementById('upload-success-message');
+            
+            // Selectores de Roles (Demo)
+            const roleUserBtn = document.getElementById('role-user');
+            const roleModBtn = document.getElementById('role-mod');
+            const currentRoleSpan = document.getElementById('current-role');
+            const roleToggleButtons = document.querySelectorAll('.role-toggle-btn');
+
+            // Selectores de Moderación
+            const moderationQueue = document.getElementById('moderation-queue');
+
+            
+            // --- Funciones ---
+            
+            /**
+             * Muestra una sección de página específica y oculta las demás.
+             * @param {string} pageId - El ID de la página a mostrar (ej: 'inicio', 'buscar')
+             */
+            function showPage(pageId) {
+                activePage = pageId;
+                pageSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                const newPage = document.getElementById(`page-${pageId}`);
+                if (newPage) {
+                    newPage.classList.add('active');
+                }
+                
+                // Actualizar estado activo en la navegación
+                navLinks.forEach(link => {
+                    if (link.dataset.page === pageId) {
+                        link.classList.add('bg-gray-900', 'text-white');
+                        link.classList.remove('text-gray-300', 'hover:bg-gray-700');
+                    } else {
+                        link.classList.remove('bg-gray-900', 'text-white');
+                        link.classList.add('text-gray-300', 'hover:bg-gray-700');
+                    }
+                });
+                
+                // Asegurar que el scroll suba al cambiar de página
+                window.scrollTo(0, 0);
+            }
+
+            /**
+             * Actualiza la UI basada en el rol del usuario (ej: mostrar panel de moderación)
+             */
+            function updateUIVisibility() {
+                if (currentUserRole === 'moderador') {
+                    navModeracion.classList.remove('hidden');
+                    currentRoleSpan.textContent = 'Moderador';
+                    roleModBtn.classList.add('bg-indigo-600');
+                    roleModBtn.classList.remove('bg-gray-600');
+                    roleUserBtn.classList.add('bg-gray-600');
+                    roleUserBtn.classList.remove('bg-indigo-600');
+                } else {
+                    navModeracion.classList.add('hidden');
+                    currentRoleSpan.textContent = 'Usuario';
+                    roleUserBtn.classList.add('bg-indigo-600');
+                    roleUserBtn.classList.remove('bg-gray-600');
+                    roleModBtn.classList.add('bg-gray-600');
+                    roleModBtn.classList.remove('bg-indigo-600');
+                    
+                    // Si un usuario normal está en la página de moderación, sacarlo
+                    if (activePage === 'moderacion') {
+                        showPage('inicio');
+                    }
+                }
+            }
+
+            /**
+             * Genera las estrellas de calificación estáticas
+             */
+            function generateStarRatings() {
+                const starContainers = document.querySelectorAll('.star-rating');
+                starContainers.forEach(container => {
+                    const rating = parseInt(container.dataset.rating, 10);
+                    container.innerHTML = ''; // Limpiar por si acaso
+                    
+                    for (let i = 1; i <= 5; i++) {
+                        const starIcon = document.createElement('i');
+                        starIcon.setAttribute('data-lucide', 'star');
+                        const starClass = (i <= rating) ? 'filled' : 'empty';
+                        starIcon.className = `lucide-star h-5 w-5 ${starClass}`;
+                        container.appendChild(starIcon);
+                    }
+                });
+            }
+
+            // --- Lógica de Eventos ---
+            
+            // Navegación principal
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = e.currentTarget.dataset.page;
+                    if (pageId) {
+                        showPage(pageId);
+                    }
+                });
+            });
+
+            // Simulación de envío de formulario de subida
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    // Mostrar mensaje de éxito
+                    uploadSuccessMessage.classList.remove('hidden');
+                    // Limpiar formulario
+                    uploadForm.reset();
+                    // Ocultar mensaje después de 5 segundos y volver al inicio
+                    setTimeout(() => {
+                        uploadSuccessMessage.classList.add('hidden');
+                        showPage('inicio');
+                    }, 5000);
+                });
+            }
+
+            // Simulación de cambio de rol
+            roleToggleButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    currentUserRole = (e.currentTarget.id === 'role-mod') ? 'moderador' : 'usuario';
+                    updateUIVisibility();
+                });
+            });
+            
+            // Simulación de acciones de moderación
+            if (moderationQueue) {
+                moderationQueue.addEventListener('click', (e) => {
+                    const target = e.target;
+                    
+                    // Buscar el botón (Aprobar o Rechazar) más cercano
+                    const approveButton = target.closest('.btn-approve');
+                    const rejectButton = target.closest('.btn-reject');
+                    
+                    if (approveButton || rejectButton) {
+                        // Encontrar la tarjeta padre y eliminarla de la cola
+                        const card = target.closest('.moderation-card');
+                        if (card) {
+                            card.style.transition = 'opacity 0.5s, transform 0.5s';
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateX(100%)';
+                            setTimeout(() => {
+                                card.remove();
+                            }, 500);
+                        }
+                    }
+                });
+            }
+
+            // --- Inicialización ---
+            
+            // Esta función debe llamarse *después* de que lucide se haya cargado
+            // pero dentro de DOMContentLoaded está bien, siempre que el script de lucide
+            // esté en el head.
+            generateStarRatings();
+            updateUIVisibility();
+            showPage('inicio'); // Mostrar la página de inicio por defecto
+            
+            // Crear todos los iconos de Lucide
+            // Esta es la línea que causaba el error
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            } else {
+                console.error('Lucide icons script no se cargó correctamente.');
+            }
+        });
+    </script>
+</body>
+</html>
+
