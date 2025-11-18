@@ -1,193 +1,392 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Apuntes Escolares – Subir Apuntes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Descomenta si notas rutas rotas en GitHub Pages (project site) -->
-  <!-- <base href="/apuntesescolares/"> -->
-
-  <style>
-    :root {
-      --bg: #0f172a; --card: #111827; --muted: #9ca3af; --text: #e5e7eb;
-      --accent: #22d3ee; --accent-2: #38bdf8; --ok: #22c55e; --err: #f43f5e;
-    }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:linear-gradient(180deg,#0b1023 0%,#0f172a 100%); color:var(--text); }
-    header { border-bottom:1px solid rgba(255,255,255,.08); backdrop-filter:blur(8px);
-      position:sticky; top:0; z-index:10; background:rgba(15,23,42,.75); }
-    .wrap { max-width:980px; margin:0 auto; padding:1rem; }
-    .brand { font-weight:700; letter-spacing:.3px; }
-    nav a { color:var(--text); text-decoration:none; margin-right:1rem; opacity:.85; }
-    nav a:hover { opacity:1; color:#fff; }
-    .hero { padding:3rem 1rem 2rem; text-align:center; }
-    .hero h1 { margin:0 0 .5rem; font-size:clamp(1.6rem,2.8vw,2.2rem); }
-    .hero p { color:var(--muted); margin:.25rem 0 0; }
-    .pill { display:inline-block; padding:.2rem .55rem; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12); color:var(--muted); font-size:.78rem; }
-    .card { background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
-      border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:1.2rem;
-      box-shadow:0 10px 30px rgba(0,0,0,.25); }
-    form { display:grid; gap:.9rem; }
-    label { font-weight:600; }
-    input[type="text"], select, textarea, input[type="file"] {
-      width:100%; background:var(--card); color:var(--text);
-      border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:.75rem .9rem; outline:none;
-    }
-    textarea { resize:vertical; min-height:110px; }
-    .row { display:grid; gap:.9rem; grid-template-columns:1fr; }
-    @media (min-width: 720px) { .row { grid-template-columns:1fr 1fr; } }
-    button[type="submit"] { background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#00111a;
-      border:none; border-radius:999px; padding:.9rem 1.2rem; font-weight:800; letter-spacing:.3px;
-      cursor:pointer; transition:transform .05s ease; }
-    button[type="submit"]:active { transform:scale(.99); }
-    .note { color:var(--muted); font-size:.92rem; }
-    footer { color:var(--muted); border-top:1px solid rgba(255,255,255,.08); margin-top:2rem; }
-    .ok { color:var(--ok); } .err { color:var(--err); }
-  </style>
+<meta charset="utf-8">
+<title>Apuntes Escolares</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- <base href="/apuntesescolares/">  <-- descomenta si notas rutas rotas en GitHub Pages -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
+  *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  header,footer{border-color:rgba(255,255,255,.08)} header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
+  .wrap{max-width:1100px;margin:0 auto;padding:1rem} .brand{font-weight:800} nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
+  .grid{display:grid;gap:1rem} .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1rem}
+  input,select,textarea,button{border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0b1023;color:var(--text);padding:.6rem .8rem}
+  button{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#00202a;border:none;font-weight:800;cursor:pointer}
+  .pill{display:inline-block;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:.2rem .6rem;font-size:.75rem;color:var(--muted)}
+  .flex{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap} .right{margin-left:auto}
+  .stars{font-size:1.1rem;cursor:pointer;user-select:none} .star-on{color:#ffd166} .star-off{color:#6b7280}
+  .doc{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding:.7rem 0}
+  .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem} @media(max-width:880px){.two{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;">
-      <div class="brand">Apuntes Escolares</div>
-      <nav>
-        <a href="#subir">Subir Apuntes</a>
-        <a href="#ayuda">Ayuda</a>
-      </nav>
-    </div>
-  </header>
+<header>
+  <div class="wrap flex">
+    <div class="brand">Apuntes Escolares</div>
+    <nav class="right">
+      <a href="#home" onclick="ui.show('home')">Inicio</a>
+      <a href="#upload" onclick="ui.show('upload')">Subir</a>
+      <a href="#mine" onclick="ui.show('mine')">Mis subidas</a>
+      <a href="#mod" onclick="ui.show('moderation')">Moderación</a>
+    </nav>
+  </div>
+</header>
 
-  <section class="hero">
-    <div class="wrap">
-      <h1>Comparte tus apuntes y desbloquea recursos al instante</h1>
-      <p class="note">Al subir un apunte, obtienes acceso inmediato a resúmenes, práctica guiada y un banco de ejercicios curados.</p>
-      <p class="pill" style="margin-top:.8rem;">Versión demo · Envío real requiere configurar tu endpoint</p>
+<main class="wrap grid">
+  <!-- Login & roles -->
+  <section class="card" id="loginBox">
+    <h2>Entrar</h2>
+    <div class="two">
+      <div>
+        <h3>Como usuario</h3>
+        <div class="grid">
+          <input id="email" type="email" placeholder="tu@email.com">
+          <button onclick="auth.magicLink()">Enviar enlace de acceso</button>
+          <small class="muted">Revisa tu correo y vuelve con el enlace.</small>
+        </div>
+      </div>
+      <div>
+        <h3>Como moderador</h3>
+        <div class="grid">
+          <input id="modpass" type="password" placeholder="Contraseña especial (17102018)">
+          <button onclick="auth.tryModerator()">Entrar como moderador</button>
+          <small class="muted">La seguridad real la aplica Supabase con <code>is_moderator</code>.</small>
+        </div>
+      </div>
+    </div>
+    <div class="flex muted" style="margin-top:.5rem">
+      <span class="pill">También puedes navegar como invitado (ver documentos y comentarios).</span>
+      <span class="right" id="whoami"></span>
     </div>
   </section>
 
-  <main class="wrap">
-    <section id="subir" class="card">
-      <h2 style="margin-top:0">Subir apunte</h2>
-      <p class="note">Completa los campos y adjunta tus archivos. Formatos: PDF, DOCX, PPTX, PNG, JPG. Máx recomendado: 20&nbsp;MB por archivo.</p>
-
-      <!-- Pega aquí tu URL real de Getform -->
-      <form action="https://getform.io/f/adrdekxa" method="POST" enctype="multipart/form-data" id="form-subir-apunte" novalidate>
-        <label for="titulo">Título del apunte</label>
-        <input id="titulo" name="titulo" type="text" placeholder="Ej. Integrales por partes – Resumen" required>
-
-        <div class="row">
-          <div>
-            <label for="carrera">Carrera</label>
-            <select id="carrera" name="carrera" required>
-              <option value="" selected disabled>Selecciona tu carrera</option>
-              <option>Ingeniería Civil</option>
-              <option>Ingeniería Geomática</option>
-              <option>Ingeniería Eléctrica Electrónica</option>
-              <option>Ingeniería en Computación</option>
-              <option>Ingeniería en Telecomunicaciones</option>
-              <option>Ingeniería Mecánica</option>
-              <option>Ingeniería Industrial</option>
-              <option>Ingeniería Mecatrónica</option>
-              <option>Ingeniería en Sistemas Biomédicos</option>
-            </select>
-          </div>
-          <div>
-            <label for="semestre">Semestre</label>
-            <select id="semestre" name="semestre" required>
-              <option value="" selected disabled>Selecciona tu semestre</option>
-              <option>1º Semestre</option>
-              <option>2º Semestre</option>
-              <option>3º Semestre</option>
-              <option>4º Semestre</option>
-              <option>5º Semestre</option>
-              <option>6º Semestre</option>
-              <option>7º Semestre</option>
-              <option>8º Semestre</option>
-              <option>9º Semestre</option>
-              <option>10º Semestre</option>
-            </select>
-          </div>
+  <!-- HOME: filtros + lista -->
+  <section class="card" id="home">
+    <h2>Documentos aprobados</h2>
+    <div class="two">
+      <div class="grid">
+        <input id="f_q" placeholder="Buscar por título o autor…" oninput="pages.search()">
+        <div class="flex">
+          <select id="f_cat" onchange="pages.search()">
+            <option value="">Todas las carreras</option>
+            <option>Ingeniería Civil</option><option>Ingeniería Geomática</option><option>Ingeniería Eléctrica Electrónica</option>
+            <option>Ingeniería en Computación</option><option>Ingeniería en Telecomunicaciones</option><option>Ingeniería Mecánica</option>
+            <option>Ingeniería Industrial</option><option>Ingeniería Mecatrónica</option><option>Ingeniería en Sistemas Biomédicos</option>
+          </select>
+          <select id="f_ext" onchange="pages.search()">
+            <option value="">Cualquier extensión</option><option>pdf</option><option>docx</option><option>pptx</option><option>png</option><option>jpg</option>
+          </select>
+          <select id="f_order" onchange="pages.search()">
+            <option value="created_at.desc">Más recientes</option>
+            <option value="avg_rating.desc">Mejor calificados</option>
+            <option value="title.asc">Título A→Z</option>
+          </select>
         </div>
-
-        <label for="descripcion">Descripción breve</label>
-        <textarea id="descripcion" name="descripcion" rows="4" placeholder="Tema, qué cubre, ejercicios incluidos, etc." required></textarea>
-
-        <label for="archivo">Documento(s)</label>
-        <input id="archivo" name="archivo" type="file" multiple
-               accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" required>
-
-        <!-- Campos útiles para servicios de formularios -->
-        <input type="hidden" name="_gotcha"> <!-- honeypot anti-spam -->
-        <input type="hidden" name="_redirect" value="https://danaheleyva.github.io/apuntesescolares/gracias.html">
-
-        <button type="submit">Enviar apunte</button>
-        <p id="estado" class="note"></p>
-      </form>
-    </section>
-
-    <section id="ayuda" style="margin-top:1.5rem">
-      <h3>Ayuda rápida</h3>
-      <ol class="note">
-        <li>Settings → Pages: Deploy from a branch · main · /(root).</li>
-        <li>Pega tu URL de Getform en <code>action="..."</code>.</li>
-        <li>Crea <code>gracias.html</code> y prueba el envío.</li>
-      </ol>
-    </section>
-  </main>
-
-  <footer>
-    <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;">
-      <p>© 2025 Apuntes Escolares</p>
-      <p class="note">Hecho con GitHub Pages</p>
+      </div>
+      <div class="grid">
+        <input id="f_tags" placeholder="Etiquetas (coma , )" oninput="pages.search()">
+        <div class="flex">
+          <label class="muted">Fecha desde</label><input type="date" id="f_from" onchange="pages.search()">
+          <label class="muted">hasta</label><input type="date" id="f_to" onchange="pages.search()">
+        </div>
+      </div>
     </div>
-  </footer>
+    <div id="docsList" class="grid" style="margin-top:.8rem"></div>
+  </section>
 
-  <script>
-    // Validación básica de archivos y feedback en cliente
-    (function () {
-      const form = document.getElementById('form-subir-apunte');
-      const input = document.getElementById('archivo');
-      const estado = document.getElementById('estado');
-      const maxMB = 20; // ajusta si necesitas otro límite
-      const allowed = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-powerpoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        'image/png','image/jpeg'
-      ];
+  <!-- SUBIR -->
+  <section class="card hide" id="upload">
+    <h2>Subir documento (queda pendiente de aprobación)</h2>
+    <div class="grid">
+      <input id="u_title" placeholder="Título" />
+      <input id="u_author" placeholder="Tu nombre (autor)" />
+      <input id="u_email" placeholder="Tu correo (para notificaciones)" />
+      <div class="two">
+        <select id="u_cat">
+          <option value="">Selecciona tu carrera</option>
+          <option>Ingeniería Civil</option><option>Ingeniería Geomática</option><option>Ingeniería Eléctrica Electrónica</option>
+          <option>Ingeniería en Computación</option><option>Ingeniería en Telecomunicaciones</option><option>Ingeniería Mecánica</option>
+          <option>Ingeniería Industrial</option><option>Ingeniería Mecatrónica</option><option>Ingeniería en Sistemas Biomédicos</option>
+        </select>
+        <input id="u_tags" placeholder="Etiquetas separadas por coma (ej. Cálculo, Integrales)" />
+      </div>
+      <input id="u_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" />
+      <div class="flex">
+        <button onclick="upload.doUpload()">Enviar</button>
+        <span id="u_msg" class="muted"></span>
+      </div>
+    </div>
+  </section>
 
-      form.addEventListener('submit', function (e) {
-        estado.textContent = '';
-        const files = Array.from(input.files || []);
-        if (!files.length) {
-          e.preventDefault();
-          estado.textContent = 'Adjunta al menos un archivo.';
-          estado.className = 'note err';
-          return;
-        }
-        for (const f of files) {
-          const sizeMB = f.size / (1024 * 1024);
-          if (sizeMB > maxMB) {
-            e.preventDefault();
-            estado.textContent = `“${f.name}” excede ${maxMB} MB.`;
-            estado.className = 'note err';
-            return;
-          }
-          if (!allowed.includes(f.type)) {
-            e.preventDefault();
-            estado.textContent = `“${f.name}” no es un tipo permitido (${f.type}).`;
-            estado.className = 'note err';
-            return;
-          }
-        }
-        estado.textContent = 'Enviando…';
-        estado.className = 'note ok';
-        // Getform hará el redirect a gracias.html si todo sale bien
-      }, false);
-    })();
-  </script>
+  <!-- MIS SUBIDAS -->
+  <section class="card hide" id="mine">
+    <h2>Mis subidas</h2>
+    <div id="mineList" class="grid"></div>
+  </section>
+
+  <!-- MODERACIÓN -->
+  <section class="card hide" id="moderation">
+    <h2>Moderación – Pendientes</h2>
+    <div id="modWarn" class="err"></div>
+    <div id="queue" class="grid"></div>
+  </section>
+
+  <!-- NOTIFICACIONES -->
+  <section class="card hide" id="notif">
+    <h2>Notificaciones</h2>
+    <div id="notifList" class="grid"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap flex">
+    <span class="muted">© 2025 Apuntes Escolares</span>
+    <div class="right flex">
+      <button onclick="auth.signOut()">Salir</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+/*** CONFIG (ya con tus datos) ***/
+const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
+const BUCKET = "DOCS"; // respeta mayúsculas
+const MODERATOR_UI_PASSWORD = "17102018"; // UI; seguridad real = app_metadata.is_moderator
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/*** UI helpers ***/
+const qs = s => document.querySelector(s);
+const el = (tag, attrs={}, children=[]) => {
+  const n = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => (k in n) ? n[k]=v : n.setAttribute(k,v));
+  (Array.isArray(children)?children:[children]).filter(Boolean).forEach(c=>n.append(c.nodeType?c:document.createTextNode(c)));
+  return n;
+};
+const ui = {
+  show(id){
+    ["home","upload","mine","moderation","notif"].forEach(x => qs("#"+x).classList.toggle("hide", x!==id));
+    if(id==="home") pages.search();
+    if(id==="mine") pages.mine();
+    if(id==="moderation") pages.queue();
+    if(id==="notif") pages.notif();
+  },
+  stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); }
+};
+
+/*** AUTH ***/
+const auth = {
+  user: null,
+  isModerator: false,
+  async loadUser(){
+    const { data: { user } } = await supabase.auth.getUser();
+    auth.user = user;
+    auth.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
+    qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}` : "Invitado";
+    return user;
+  },
+  async magicLink(){
+    const email = qs("#email").value.trim();
+    if(!email) return alert("Escribe tu correo.");
+    await supabase.auth.signInWithOtp({ email });
+    alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
+  },
+  async tryModerator(){
+    const pass = qs("#modpass").value.trim();
+    if(pass !== MODERATOR_UI_PASSWORD){ alert("Contraseña incorrecta."); return; }
+    ui.show("moderation");
+    qs("#modWarn").textContent = auth.isModerator ? "" :
+      "⚠ Tu cuenta no tiene permisos de moderador en Supabase. Entra a Auth→Users y marca app_metadata.is_moderator=true para tu usuario.";
+  },
+  async signOut(){ await supabase.auth.signOut(); location.reload(); }
+};
+supabase.auth.onAuthStateChange(async () => { await auth.loadUser(); });
+
+/*** LISTADO + BÚSQUEDA ***/
+const pages = {
+  async search(){
+    const q = qs("#f_q").value.trim();
+    const cat = qs("#f_cat").value;
+    const ext = qs("#f_ext").value;
+    const tags = qs("#f_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
+    const order = qs("#f_order").value || "created_at.desc";
+    const [col, dir] = order.split(".");
+    let req = supabase.from("documents").select("*").eq("status","approved");
+    if(q) req = req.or(`title.ilike.%${q}%,author_name.ilike.%${q}%`);
+    if(cat) req = req.eq("category", cat);
+    if(ext) req = req.eq("ext", ext);
+    if(tags.length) req = req.contains("tags", tags);
+    const from = qs("#f_from").value, to = qs("#f_to").value;
+    if(from) req = req.gte("created_at", from);
+    if(to) req = req.lte("created_at", to+" 23:59:59");
+    req = req.order(col, { ascending: dir==="asc" });
+    const { data, error } = await req;
+    const box = qs("#docsList"); box.innerHTML = "";
+    if(error){ box.textContent = "Error cargando documentos."; return; }
+    if(!data.length){ box.textContent = "No hay documentos."; return; }
+    data.forEach(d => box.append(render.docCard(d, {canRate: !!auth.user, canComment: true})));
+  },
+  async mine(){
+    if(!auth.user){ qs("#mineList").innerHTML = "Inicia sesión para ver tus subidas."; return; }
+    const { data, error } = await supabase.from("documents").select("*").eq("owner", auth.user.id).order("created_at",{ascending:false});
+    const box = qs("#mineList"); box.innerHTML = "";
+    if(error){ box.textContent = "Error."; return; }
+    if(!data.length){ box.textContent = "Aún no has subido documentos."; return; }
+    data.forEach(d => box.append(render.docCard(d,{mine:true})));
+  },
+  async queue(){
+    const box = qs("#queue"); box.innerHTML = "";
+    if(!auth.isModerator){ box.textContent = "No eres moderador (según Supabase)."; return; }
+    const { data, error } = await supabase.from("documents").select("*").eq("status","pending").order("created_at",{ascending:true});
+    if(error){ box.textContent = "Error cargando pendientes."; return; }
+    if(!data.length){ box.textContent = "No hay pendientes."; return; }
+    data.forEach(d => box.append(render.modCard(d)));
+  },
+  async notif(){
+    if(!auth.user){ qs("#notifList").innerHTML = "Inicia sesión para ver notificaciones."; return; }
+    const { data } = await supabase.from("notifications").select("*").order("created_at",{ascending:false});
+    const box = qs("#notifList"); box.innerHTML = "";
+    if(!data || !data.length){ box.textContent = "Sin notificaciones."; return; }
+    data.forEach(n => box.append(el("div",{className:"doc"},[
+      el("div",{},[el("div",{},`${n.type==='accepted'?'✅ Aceptado':'❌ Rechazado'}`), el("div",{className:"muted"}, n.message||"")]),
+      el("div",{className:"muted"}, new Date(n.created_at).toLocaleString())
+    ])));
+  }
+};
+
+/*** RENDER ***/
+const render = {
+  docCard(d, opts={}){
+    const row = el("div",{className:"doc"});
+    // URL pública correcta del bucket DOCS
+    const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
+    const publicUrl = pub.publicUrl;
+    const fileName = d.storage_path.split("/").pop();
+
+    const left = el("div",{},[
+      el("div",{}, d.title),
+      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.category||'Sin categoría'} · ${d.ext||''}`),
+      el("div",{className:"muted"}, `Subido: ${new Date(d.created_at).toLocaleDateString()} · ${d.tags?.join(", ")||''}`)
+    ]);
+    const right = el("div",{className:"grid",style:"justify-items:end"},[
+      el("a",{href:publicUrl,download:fileName}, "Descargar"),
+      el("div",{className:"stars"}, ui.stars(d.avg_rating))
+    ]);
+    row.append(left,right);
+
+    if(opts.canRate){
+      right.querySelector(".stars").addEventListener("click", async (ev) => {
+        const idx = Array.from(ev.currentTarget.childNodes).indexOf(ev.target);
+        if(idx<0) return; const stars = idx+1;
+        await supabase.from("ratings").upsert({ doc_id: d.id, user_id: auth.user.id, stars });
+        pages.search();
+      });
+    }
+
+    // Comentarios
+    const comWrap = el("div",{className:"grid", style:"grid-column:1/-1"});
+    const list = el("div",{className:"grid"});
+    const form = el("div",{className:"flex"},[
+      el("input",{id:`nick-${d.id}`,placeholder:"Tu nombre"}),
+      el("input",{id:`cmt-${d.id}`,placeholder:"Escribe un comentario…",style:"flex:1"}),
+      el("button",{onclick: async()=>{
+        const body = qs(`#cmt-${d.id}`).value.trim(); const author = qs(`#nick-${d.id}`).value.trim() || (auth.user?.email || "Invitado");
+        if(!body) return;
+        await supabase.from("comments").insert({doc_id:d.id, user_id:auth.user?.id||null, author_name:author, body});
+        loadComments();
+      }}, "Comentar")
+    ]);
+    comWrap.append(list, form);
+    row.append(comWrap);
+    async function loadComments(){
+      const { data } = await supabase.from("comments").select("*").eq("doc_id", d.id).order("created_at",{ascending:false});
+      list.innerHTML = "";
+      (data||[]).forEach(c => list.append(el("div",{className:"doc"},[
+        el("div",{},[el("div",{},c.author_name), el("div",{className:"muted"}, c.body)]),
+        el("div",{className:"muted"}, new Date(c.created_at).toLocaleString())
+      ])));
+    }
+    loadComments();
+
+    if(opts.mine){
+      row.append(el("div",{className:"muted",style:"grid-column:1/-1"}, `Estado: ${d.status}${d.reject_reason? ' · Motivo: '+d.reject_reason : ''}`));
+    }
+    return row;
+  },
+
+  modCard(d){
+    const row = el("div",{className:"doc"});
+    const left = el("div",{},[
+      el("div",{}, d.title),
+      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.email||''}`),
+      el("div",{className:"muted"}, `${d.category||''} · ${d.tags?.join(", ")||''}`)
+    ]);
+    const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
+    const preview = el("a",{href:pub.publicUrl,target:"_blank"},"Ver archivo");
+    const acceptBtn = el("button",{onclick: async ()=>{
+      if(!auth.isModerator) return alert("No tienes permisos (RLS).");
+      const parts = d.storage_path.split("/");
+      const oldPath = d.storage_path;
+      const newPath = `public/${d.id}-${parts[parts.length-1].replace(/^pending\//,'')}`;
+      await supabase.storage.from(BUCKET).copy(oldPath, newPath);
+      await supabase.storage.from(BUCKET).remove([oldPath]);
+      await supabase.from("documents").update({ status: 'approved', storage_path: newPath, reject_reason: null }).eq("id", d.id);
+      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'accepted', message:`Tu documento "${d.title}" fue aprobado.` });
+      pages.queue(); pages.search();
+    }}, "Aceptar");
+    const reason = el("input",{placeholder:"Motivo de rechazo (obligatorio)"});
+    const rejectBtn = el("button",{onclick: async ()=>{
+      if(!auth.isModerator) return alert("No tienes permisos (RLS).");
+      const r = reason.value.trim(); if(!r) return alert("Escribe el motivo.");
+      await supabase.from("documents").update({ status:'rejected', reject_reason:r }).eq("id", d.id);
+      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'rejected', message:r });
+      pages.queue();
+    }}, "Rechazar");
+    const right = el("div",{className:"grid",style:"justify-items:end"},[preview, acceptBtn, reason, rejectBtn]);
+    row.append(left,right);
+    return row;
+  }
+};
+
+/*** SUBIR ***/
+const upload = {
+  async doUpload(){
+    if(!auth.user) { alert("Inicia sesión con tu correo para subir."); return; }
+    const title = qs("#u_title").value.trim();
+    const author = qs("#u_author").value.trim();
+    const email = qs("#u_email").value.trim();
+    const category = qs("#u_cat").value || "";
+    const tags = qs("#u_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
+    const file = qs("#u_file").files[0];
+    if(!title || !file){ return alert("Falta título o archivo."); }
+    // Límite cliente 5 MB (igual que tu bucket)
+    if(file.size > 5 * 1024 * 1024){ return alert("El archivo excede 5 MB."); }
+    qs("#u_msg").textContent = "Subiendo…";
+    const ext = (file.name.split(".").pop()||"").toLowerCase();
+    const path = `pending/${auth.user.id}/${Date.now()}-${file.name}`;
+    const { error: e1 } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false });
+    if(e1){ qs("#u_msg").textContent="Error al subir."; return; }
+    await supabase.from("documents").insert({
+      owner: auth.user.id, title, author_name: author, email, category, tags,
+      ext, storage_path: path, size_bigint: file.size, status:'pending'
+    });
+    qs("#u_msg").textContent = "Listo. Quedó como pendiente. Te avisaremos al decidir.";
+    qs("#u_title").value = qs("#u_author").value = qs("#u_email").value = qs("#u_tags").value = "";
+    qs("#u_file").value = ""; pages.mine();
+  }
+};
+
+/*** INICIO ***/
+(async function init(){
+  await auth.loadUser();
+  ui.show("home");
+  pages.search();
+})();
+</script>
 </body>
 </html>
+
