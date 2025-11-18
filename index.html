@@ -5,7 +5,8 @@
 <title>Apuntes Escolares</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- <base href="/apuntesescolares/"> -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase UMD: expone window.supabase -->
+<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
   :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
   *{box-sizing:border-box}
@@ -44,7 +45,6 @@
 </header>
 
 <main class="wrap grid">
-  <!-- LOGIN -->
   <section class="card" id="loginBox">
     <h2>Entrar</h2>
     <div class="two">
@@ -76,7 +76,6 @@
     </div>
   </section>
 
-  <!-- HOME -->
   <section class="card" id="home">
     <h2>Documentos aprobados</h2>
     <div class="two">
@@ -110,7 +109,6 @@
     <div id="docsList" class="grid" style="margin-top:.8rem"></div>
   </section>
 
-  <!-- SUBIR -->
   <section class="card hide" id="upload">
     <h2>Subir documento (queda pendiente de aprobación)</h2>
     <div class="grid">
@@ -134,20 +132,17 @@
     </div>
   </section>
 
-  <!-- MIS SUBIDAS -->
   <section class="card hide" id="mine">
     <h2>Mis subidas</h2>
     <div id="mineList" class="grid"></div>
   </section>
 
-  <!-- MODERACIÓN -->
   <section class="card hide" id="moderation">
     <h2>Moderación – Pendientes</h2>
     <div id="modWarn" class="err"></div>
     <div id="queue" class="grid"></div>
   </section>
 
-  <!-- NOTIFICACIONES -->
   <section class="card hide" id="notif">
     <h2>Notificaciones</h2>
     <div id="notifList" class="grid"></div>
@@ -164,13 +159,13 @@
 </footer>
 
 <script>
-/*** CONFIG DE SUPABASE ***/
+/*** CONFIG ***/
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
 const BUCKET = "DOCS";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/*** HELPERS UI ***/
+/*** UI helpers ***/
 const qs = s => document.querySelector(s);
 const el = (t,a={},c=[])=>{const n=document.createElement(t);Object.entries(a).forEach(([k,v])=>(k in n)?n[k]=v:n.setAttribute(k,v));(Array.isArray(c)?c:[c]).filter(Boolean).forEach(x=>n.append(x.nodeType?x:document.createTextNode(x)));return n;}
 const ui = {
@@ -186,21 +181,15 @@ const ui = {
 
 /*** AUTH ***/
 const REDIRECT_URL = window.location.origin + window.location.pathname;
-
 const auth = {
-  user: null,
-  isModerator: false,
+  user:null, isModerator:false,
 
   async loadUser(){
     const { data: { user } } = await supabase.auth.getUser();
     this.user = user;
     this.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
-
-    // Header estado
     qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${this.isModerator?" · MOD":""}` : "Invitado";
-    // Mostrar/Ocultar moderación en nav
     qs("#nav-mod").classList.toggle("hide", !this.isModerator);
-    // Ocultar sección Entrar si hay sesión
     qs("#loginBox").classList.toggle("hide", !!user);
     return user;
   },
@@ -212,35 +201,24 @@ const auth = {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return alert(error.message);
     await this.loadUser();
-    ui.show("home");
-    pages.search();
+    ui.show("home"); pages.search();
   },
 
   async signUpPw(){
     const email = qs("#email").value.trim();
     const password = qs("#password").value;
     if(!email || !password) return alert("Correo y contraseña son obligatorios.");
-    const { data, error } = await supabase.auth.signUp({
-      email, password,
-      options: { emailRedirectTo: REDIRECT_URL }
-    });
+    const { error } = await supabase.auth.signUp({ email, password, options:{ emailRedirectTo: REDIRECT_URL }});
     if (error) return alert(error.message);
-    // Si confirmación está desactivada, habrá sesión inmediata
     await this.loadUser();
-    if (this.user) {
-      alert("Cuenta creada. Ya puedes usar la app.");
-      ui.show("home"); pages.search();
-    } else {
-      alert("Cuenta creada. Revisa tu correo para confirmar y luego entra.");
-    }
+    if (this.user) { alert("Cuenta creada. Ya puedes usar la app."); ui.show("home"); pages.search(); }
+    else { alert("Cuenta creada. Revisa tu correo para confirmar y luego entra."); }
   },
 
   async resetPw(){
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: REDIRECT_URL + "#reset"
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: REDIRECT_URL + "#reset" });
     if (error) return alert(error.message);
     alert("Te envié un correo para restablecer tu contraseña.");
   },
@@ -248,26 +226,20 @@ const auth = {
   async magicLink(){
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: REDIRECT_URL }
-    });
+    const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: REDIRECT_URL }});
     if (error) return alert(error.message);
     alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
   },
 
   async openModerator(){
-    // Solo abrimos si el token ya trae permiso
     await this.loadUser();
     if (!this.isModerator) { alert("No tienes permisos de moderador."); return; }
-    ui.show("moderation");
-    qs("#modWarn").textContent = "";
+    ui.show("moderation"); qs("#modWarn").textContent = "";
   },
 
   async signOut(){ await supabase.auth.signOut(); await this.loadUser(); ui.show("home"); pages.search(); }
 };
 
-// Escucha cambios de sesión (incluye flujo de recuperación de contraseña)
 supabase.auth.onAuthStateChange(async (event) => {
   if (event === "PASSWORD_RECOVERY") {
     const newPass = prompt("Escribe tu nueva contraseña:");
@@ -280,9 +252,9 @@ supabase.auth.onAuthStateChange(async (event) => {
   await auth.loadUser();
 });
 
-/*** LISTADO + BÚSQUEDA ***/
+/*** PAGES (igual que antes)… ***/
 const pages = {
-  async search(){
+  async search(){ /* ...igual que antes... */ 
     const q = qs("#f_q").value.trim();
     const cat = qs("#f_cat").value;
     const ext = qs("#f_ext").value;
@@ -305,7 +277,7 @@ const pages = {
     data.forEach(d => box.append(render.docCard(d, {canRate: !!auth.user, canComment: true})));
   },
 
-  async mine(){
+  async mine(){ /* ...igual que antes... */ 
     if(!auth.user){ qs("#mineList").innerHTML = "Inicia sesión para ver tus subidas."; return; }
     const { data, error } = await supabase.from("documents").select("*").eq("owner", auth.user.id).order("created_at",{ascending:false});
     const box = qs("#mineList"); box.innerHTML = "";
@@ -314,7 +286,7 @@ const pages = {
     data.forEach(d => box.append(render.docCard(d,{mine:true})));
   },
 
-  async queue(){
+  async queue(){ /* ...igual que antes... */ 
     const box = qs("#queue"); box.innerHTML = "";
     if(!auth.isModerator){ box.textContent = "No eres moderador (según Supabase)."; return; }
     const { data, error } = await supabase.from("documents").select("*").eq("status","pending").order("created_at",{ascending:true});
@@ -323,7 +295,7 @@ const pages = {
     data.forEach(d => box.append(render.modCard(d)));
   },
 
-  async notif(){
+  async notif(){ /* ...igual que antes... */ 
     if(!auth.user){ qs("#notifList").innerHTML = "Inicia sesión para ver notificaciones."; return; }
     const { data } = await supabase.from("notifications").select("*").eq("user_id", auth.user.id).order("created_at",{ascending:false});
     const box = qs("#notifList"); box.innerHTML = "";
@@ -335,14 +307,14 @@ const pages = {
   }
 };
 
-/*** RENDER ***/
+/*** RENDER (igual que antes)… ***/
 const render = {
-  docCard(d, opts={}){
+  /* docCard y modCard exactamente como te mandé anteriormente */
+  docCard(d, opts={}){ /* ...omitido por brevedad, igual que antes... */ 
     const row = el("div",{className:"doc"});
     const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
     const publicUrl = pub.publicUrl;
     const fileName = d.storage_path.split("/").pop();
-
     const left = el("div",{},[
       el("div",{}, d.title),
       el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.category||'Sin categoría'} · ${d.ext||''}`),
@@ -353,7 +325,6 @@ const render = {
       el("div",{className:"stars"}, ui.stars(d.avg_rating))
     ]);
     row.append(left,right);
-
     if(opts.canRate){
       right.querySelector(".stars").addEventListener("click", async (ev) => {
         const idx = Array.from(ev.currentTarget.childNodes).indexOf(ev.target);
@@ -362,8 +333,6 @@ const render = {
         pages.search();
       });
     }
-
-    // Comentarios
     const comWrap = el("div",{className:"grid", style:"grid-column:1/-1"});
     const list = el("div",{className:"grid"});
     const form = el("div",{className:"flex"},[
@@ -387,14 +356,13 @@ const render = {
       ])));
     }
     loadComments();
-
     if(opts.mine){
       row.append(el("div",{className:"muted",style:"grid-column:1/-1"}, `Estado: ${d.status}${d.reject_reason? ' · Motivo: '+d.reject_reason : ''}`));
     }
     return row;
   },
 
-  modCard(d){
+  modCard(d){ /* ...igual que antes... */ 
     const row = el("div",{className:"doc"});
     const left = el("div",{},[
       el("div",{}, d.title),
@@ -408,7 +376,6 @@ const render = {
       const parts = d.storage_path.split("/");
       const oldPath = d.storage_path;
       const newPath = `public/${d.id}-${parts[parts.length-1].replace(/^pending\//,'')}`;
-      // copiar a /public y borrar de /pending
       const { error:copyErr } = await supabase.storage.from(BUCKET).copy(oldPath, newPath);
       if(copyErr){ alert("Error al publicar: "+copyErr.message); return; }
       await supabase.storage.from(BUCKET).remove([oldPath]);
@@ -430,11 +397,10 @@ const render = {
   }
 };
 
-/*** SUBIDA (con manejo de errores detallado) ***/
+/*** SUBIDA (igual que antes, con errores detallados) ***/
 const upload = {
   async doUpload(){
     if(!auth.user) { alert("Inicia sesión con tu correo para subir."); return; }
-
     const msg = qs("#u_msg");
     const title = qs("#u_title").value.trim();
     const author = qs("#u_author").value.trim();
@@ -442,68 +408,34 @@ const upload = {
     const category = qs("#u_cat").value || "";
     const tags = qs("#u_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
     const file = qs("#u_file").files[0];
-
-    try {
+    try{
       if(!title || !file){ alert("Falta título o archivo."); return; }
-      if(file.size > 5 * 1024 * 1024){ alert("El archivo excede 5 MB."); return; }
-
+      if(file.size > 5*1024*1024){ alert("El archivo excede 5 MB."); return; }
       msg.textContent = "Subiendo archivo al almacenamiento…";
-
       const ext  = (file.name.split(".").pop()||"").toLowerCase();
       const path = `pending/${auth.user.id}/${Date.now()}-${file.name}`;
-
-      // 1) Subir a Storage
-      const { data:up, error:e1 } = await supabase
-        .storage.from(BUCKET)
-        .upload(path, file, { upsert:false });
-
-      if (e1) {
-        console.error("STORAGE UPLOAD ERROR:", e1);
-        msg.textContent = "Error al subir: " + e1.message;
-        return;
-      }
-
-      // 2) Registrar en la base
+      const { error:e1 } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false });
+      if(e1){ console.error(e1); msg.textContent = "Error al subir: "+e1.message; return; }
       msg.textContent = "Registrando en la base…";
-      const { data:ins, error:e2 } = await supabase
-        .from("documents")
-        .insert({
-          owner: auth.user.id,
-          title,
-          author_name: author,
-          email,
-          category,
-          tags,
-          ext,
-          storage_path: path,
-          size_bigint: file.size,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (e2) {
-        console.error("DB INSERT ERROR:", e2);
-        msg.textContent = "Error al registrar: " + e2.message;
-        // Revertimos el archivo para no dejar basura si el insert falló
-        await supabase.storage.from(BUCKET).remove([path]);
-        return;
-      }
-
+      const { error:e2 } = await supabase.from("documents").insert({
+        owner:auth.user.id, title, author_name:author, email, category, tags,
+        ext, storage_path:path, size_bigint:file.size, status:'pending'
+      });
+      if(e2){ console.error(e2); msg.textContent = "Error al registrar: "+e2.message; await supabase.storage.from(BUCKET).remove([path]); return; }
       msg.textContent = "Listo. Quedó como pendiente para moderación.";
-      // Limpiar formulario y refrescar “Mis subidas”
       qs("#u_title").value = qs("#u_author").value = qs("#u_email").value = qs("#u_tags").value = "";
       qs("#u_file").value = "";
       pages.mine();
-    } catch (err) {
-      console.error("UPLOAD UNEXPECTED ERROR:", err);
-      msg.textContent = "Error inesperado: " + (err?.message || err);
-    }
+    }catch(err){ console.error(err); msg.textContent = "Error inesperado: "+(err?.message||err); }
   }
 };
 
-/*** INICIO ***/
+/*** INIT ***/
 (async function init(){
+  // Comprobación defensiva del CDN (si falla verás este alert)
+  if(!window.supabase || !window.supabase.createClient){
+    alert("No se cargó la librería de Supabase. Revisa el CDN.");
+  }
   await auth.loadUser();
   ui.show("home");
   pages.search();
@@ -511,4 +443,5 @@ const upload = {
 </script>
 </body>
 </html>
+
 
