@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <title>Apuntes Escolares</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- <base href="/apuntesescolares/">  Descomenta si notas rutas rotas en GitHub Pages -->
+<!-- Descomenta si notas rutas rotas en GitHub Pages -->
+<!-- <base href="/apuntesescolares/"> -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
@@ -25,8 +26,12 @@
   .stars{font-size:1.1rem;cursor:pointer;user-select:none}
   .star-on{color:#ffd166}.star-off{color:#6b7280}
   .doc{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding:.7rem 0}
-  .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem} @media(max-width:880px){.two{grid-template-columns:1fr}}
+  .muted{color:var(--muted)}
+  .err{color:var(--err)}
+  .ok{color:var(--ok)}
+  .hide{display:none}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:880px){.two{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -34,9 +39,9 @@
   <div class="wrap flex">
     <div class="brand">Apuntes Escolares</div>
     <nav class="right">
-      <a href="#home" onclick="ui.show('home')">Inicio</a>
+      <a href="#home"   onclick="ui.show('home')">Inicio</a>
       <a href="#upload" onclick="ui.show('upload')">Subir</a>
-      <a href="#mine" onclick="ui.show('mine')">Mis subidas</a>
+      <a href="#mine"   onclick="ui.show('mine')">Mis subidas</a>
       <a id="nav-mod" href="#mod" onclick="ui.show('moderation')" class="hide">Moderación</a>
     </nav>
   </div>
@@ -163,15 +168,11 @@
 </footer>
 
 <script>
-/*** SUPABASE ***/
+/*** CONFIG DE SUPABASE (TU PROYECTO) ***/
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
-const BUCKET = "DOCS";
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  { auth: { persistSession: true, autoRefreshToken: true } } // clave para no quedar "Invitado"
-);
+const BUCKET = "DOCS"; // público lectura; subidas autenticadas
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /*** HELPERS UI ***/
 const qs = s => document.querySelector(s);
@@ -187,8 +188,21 @@ const ui = {
   stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); }
 };
 
-/*** AUTH ***/
-const REDIRECT_URL = window.location.origin + window.location.pathname;
+/*** ====== AUTH ====== ***/
+
+// Refresca la UI (oculta/mostrar “Entrar”, muestra Moderación si aplica)
+function refreshAuthUI() {
+  const logged = !!auth.user;
+  const who = qs('#whoami');
+  const loginBox = qs('#loginBox');
+  const navMod = qs('#nav-mod');
+
+  if (who) who.textContent = logged
+    ? `Conectado: ${auth.user.email || 'usuario'}${auth.isModerator ? ' · MOD' : ''}`
+    : 'Invitado';
+  if (loginBox) loginBox.classList.toggle('hide', logged);
+  if (navMod)   navMod.classList.toggle('hide', !auth.isModerator);
+}
 
 const auth = {
   user: null,
@@ -196,15 +210,10 @@ const auth = {
 
   async loadUser(){
     const { data: { user } } = await supabase.auth.getUser();
-    this.user = user;
-    this.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
-    // UI: quién soy + mostrar/ocultar Moderación y Login
-    qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${this.isModerator?" · MOD":""}` : "Invitado";
-    const navMod = qs("#nav-mod");
-    if (navMod) navMod.classList.toggle("hide", !this.isModerator);
-    const loginBox = qs("#loginBox");
-    if (loginBox) loginBox.classList.toggle("hide", !!user);
-    return user;
+    this.user = user || null;
+    this.isModerator = !!(user?.app_metadata?.is_moderator || user?.is_moderator);
+    refreshAuthUI();
+    return this.user;
   },
 
   async signInPw(){
@@ -212,7 +221,14 @@ const auth = {
     const password = qs("#password").value;
     if(!email || !password) return alert("Correo y contraseña son obligatorios.");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return alert(error.message);
+    if (error) {
+      if (/invalid login/i.test(error.message)) {
+        alert("Credenciales inválidas.\nSi alguna vez entraste con enlace mágico, esa cuenta no tiene contraseña. Pulsa 'Olvidé mi contraseña' para crear una.");
+      } else {
+        alert(error.message);
+      }
+      return;
+    }
     location.reload();
   },
 
@@ -220,13 +236,13 @@ const auth = {
     const email = qs("#email").value.trim();
     const password = qs("#password").value;
     if(!email || !password) return alert("Correo y contraseña son obligatorios.");
-    // Con "Confirm email" APAGADO, Supabase devuelve data.session y entra directo
+    // Si Confirm Email está apagado, supabase devuelve session y entras directo
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return alert(error.message);
     if (data.session) {
-      location.reload(); // ya hay sesión activa
+      location.reload();
     } else {
-      alert("Te enviamos un correo para confirmar tu cuenta. Abre el enlace para terminar el registro.");
+      alert("Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.");
     }
   },
 
@@ -234,7 +250,7 @@ const auth = {
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: REDIRECT_URL + "#reset"
+      redirectTo: window.location.origin + window.location.pathname + "#reset"
     });
     if (error) return alert(error.message);
     alert("Te envié un correo para restablecer tu contraseña.");
@@ -245,16 +261,19 @@ const auth = {
     if(!email) return alert("Escribe tu correo.");
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: REDIRECT_URL }
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
     });
     if (error) return alert(error.message);
     alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
   },
 
   async openModerator(){
-    if (!this.isModerator) { alert("No tienes permisos de moderador."); return; }
+    await this.loadUser();                 // asegura estado fresco
+    if (!this.user)         return alert("Primero inicia sesión.");
+    if (!this.isModerator)  return alert("No tienes permisos de moderador.");
     ui.show("moderation");
     qs("#modWarn").textContent = "";
+    pages.queue();
   },
 
   async signOut(){ await supabase.auth.signOut(); location.reload(); }
@@ -273,7 +292,7 @@ supabase.auth.onAuthStateChange(async (event) => {
   await auth.loadUser();
 });
 
-/*** PÁGINAS ***/
+/*** LISTADO + BÚSQUEDA ***/
 const pages = {
   async search(){
     const q = qs("#f_q").value.trim();
@@ -363,7 +382,8 @@ const render = {
       el("input",{id:`nick-${d.id}`,placeholder:"Tu nombre"}),
       el("input",{id:`cmt-${d.id}`,placeholder:"Escribe un comentario…",style:"flex:1"}),
       el("button",{onclick: async()=>{
-        const body = qs(`#cmt-${d.id}`).value.trim(); const author = qs(`#nick-${d.id}`).value.trim() || (auth.user?.email || "Invitado");
+        const body = qs(`#cmt-${d.id}`).value.trim();
+        const author = qs(`#nick-${d.id}`).value.trim() || (auth.user?.email || "Invitado");
         if(!body) return;
         await supabase.from("comments").insert({doc_id:d.id, user_id:auth.user?.id||null, author_name:author, body});
         loadComments();
@@ -399,12 +419,12 @@ const render = {
     const acceptBtn = el("button",{onclick: async ()=>{
       if(!auth.isModerator) return alert("No tienes permisos (RLS).");
       const parts = d.storage_path.split("/");
-      const oldPath = d.storage_path;
-      const newPath = `public/${d.id}-${parts[parts.length-1].replace(/^pending\//,'')}`;
-      await supabase.storage.from(BUCKET).copy(oldPath, newPath);
-      await supabase.storage.from(BUCKET).remove([oldPath]);
-      await supabase.from("documents").update({ status: 'approved', storage_path: newPath, reject_reason: null }).eq("id", d.id);
-      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'accepted', message:`Tu documento "${d.title}" fue aprobado.` });
+      const fileOnly = parts[parts.length-1];
+      const newPath = `public/${d.id}-${fileOnly}`;
+      await supabase.storage.from(BUCKET).copy(d.storage_path, newPath);
+      await supabase.storage.from(BUCKET).remove([d.storage_path]);
+      await supabase.from("documents").update({ status:'approved', storage_path:newPath, reject_reason:null }).eq("id", d.id);
+      await supabase.from("notifications").insert({ user_id:d.owner, doc_id:d.id, type:'accepted', message:`Tu documento "${d.title}" fue aprobado.` });
       pages.queue(); pages.search();
     }}, "Aceptar");
     const reason = el("input",{placeholder:"Motivo de rechazo (obligatorio)"});
@@ -412,7 +432,7 @@ const render = {
       if(!auth.isModerator) return alert("No tienes permisos (RLS).");
       const r = reason.value.trim(); if(!r) return alert("Escribe el motivo.");
       await supabase.from("documents").update({ status:'rejected', reject_reason:r }).eq("id", d.id);
-      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'rejected', message:r });
+      await supabase.from("notifications").insert({ user_id:d.owner, doc_id:d.id, type:'rejected', message:r });
       pages.queue();
     }}, "Rechazar");
     const right = el("div",{className:"grid",style:"justify-items:end"},[preview, acceptBtn, reason, rejectBtn]);
@@ -457,6 +477,7 @@ const upload = {
 </script>
 </body>
 </html>
+
 
 
 
