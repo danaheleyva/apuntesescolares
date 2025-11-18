@@ -30,13 +30,13 @@
       <a href="#home" onclick="ui.show('home')">Inicio</a>
       <a href="#upload" onclick="ui.show('upload')">Subir</a>
       <a href="#mine" onclick="ui.show('mine')">Mis subidas</a>
-      <a href="#mod" onclick="ui.show('moderation')">Moderación</a>
+      <a id="nav-mod" href="#mod" onclick="ui.show('moderation')" class="hide">Moderación</a>
     </nav>
   </div>
 </header>
 
 <main class="wrap grid">
-  <!-- Login & roles -->
+  <!-- Login -->
   <section class="card" id="loginBox">
     <h2>Entrar</h2>
     <div class="two">
@@ -51,9 +51,8 @@
       <div>
         <h3>Como moderador</h3>
         <div class="grid">
-          <input id="modpass" type="password" placeholder="Contraseña especial (17102018)">
-          <button onclick="auth.tryModerator()">Entrar como moderador</button>
-          <small class="muted">La seguridad real la aplica Supabase con <code>is_moderator</code>.</small>
+          <button onclick="auth.openModerator()">Ir al panel de moderación</button>
+          <small class="muted">Necesitas una cuenta con permisos de moderador.</small>
         </div>
       </div>
     </div>
@@ -151,11 +150,10 @@
 </footer>
 
 <script>
-/*** CONFIG (ya con tus datos) ***/
+/*** CONFIG (con tus datos) ***/
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
-const BUCKET = "DOCS"; // respeta mayúsculas
-const MODERATOR_UI_PASSWORD = "17102018"; // UI; seguridad real = app_metadata.is_moderator
+const BUCKET = "DOCS"; // mayúsculas
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -182,26 +180,32 @@ const ui = {
 const auth = {
   user: null,
   isModerator: false,
+
   async loadUser(){
     const { data: { user } } = await supabase.auth.getUser();
     auth.user = user;
     auth.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
-    qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}` : "Invitado";
+    const badge = user ? `Conectado: ${user.email||"usuario"}${auth.isModerator?" · MOD":""}` : "Invitado";
+    qs("#whoami").textContent = badge;
+    // mostrar/ocultar enlace de moderación
+    const navMod = qs("#nav-mod");
+    if (navMod) navMod.classList.toggle("hide", !auth.isModerator);
     return user;
   },
+
   async magicLink(){
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
     await supabase.auth.signInWithOtp({ email });
     alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
   },
-  async tryModerator(){
-    const pass = qs("#modpass").value.trim();
-    if(pass !== MODERATOR_UI_PASSWORD){ alert("Contraseña incorrecta."); return; }
+
+  async openModerator(){
+    if (!auth.isModerator) { alert("No tienes permisos de moderador."); return; }
     ui.show("moderation");
-    qs("#modWarn").textContent = auth.isModerator ? "" :
-      "⚠ Tu cuenta no tiene permisos de moderador en Supabase. Entra a Auth→Users y marca app_metadata.is_moderator=true para tu usuario.";
+    qs("#modWarn").textContent = "";
   },
+
   async signOut(){ await supabase.auth.signOut(); location.reload(); }
 };
 supabase.auth.onAuthStateChange(async () => { await auth.loadUser(); });
@@ -230,6 +234,7 @@ const pages = {
     if(!data.length){ box.textContent = "No hay documentos."; return; }
     data.forEach(d => box.append(render.docCard(d, {canRate: !!auth.user, canComment: true})));
   },
+
   async mine(){
     if(!auth.user){ qs("#mineList").innerHTML = "Inicia sesión para ver tus subidas."; return; }
     const { data, error } = await supabase.from("documents").select("*").eq("owner", auth.user.id).order("created_at",{ascending:false});
@@ -238,6 +243,7 @@ const pages = {
     if(!data.length){ box.textContent = "Aún no has subido documentos."; return; }
     data.forEach(d => box.append(render.docCard(d,{mine:true})));
   },
+
   async queue(){
     const box = qs("#queue"); box.innerHTML = "";
     if(!auth.isModerator){ box.textContent = "No eres moderador (según Supabase)."; return; }
@@ -246,6 +252,7 @@ const pages = {
     if(!data.length){ box.textContent = "No hay pendientes."; return; }
     data.forEach(d => box.append(render.modCard(d)));
   },
+
   async notif(){
     if(!auth.user){ qs("#notifList").innerHTML = "Inicia sesión para ver notificaciones."; return; }
     const { data } = await supabase.from("notifications").select("*").order("created_at",{ascending:false});
@@ -262,7 +269,6 @@ const pages = {
 const render = {
   docCard(d, opts={}){
     const row = el("div",{className:"doc"});
-    // URL pública correcta del bucket DOCS
     const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
     const publicUrl = pub.publicUrl;
     const fileName = d.storage_path.split("/").pop();
@@ -363,7 +369,6 @@ const upload = {
     const tags = qs("#u_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
     const file = qs("#u_file").files[0];
     if(!title || !file){ return alert("Falta título o archivo."); }
-    // Límite cliente 5 MB (igual que tu bucket)
     if(file.size > 5 * 1024 * 1024){ return alert("El archivo excede 5 MB."); }
     qs("#u_msg").textContent = "Subiendo…";
     const ext = (file.name.split(".").pop()||"").toLowerCase();
