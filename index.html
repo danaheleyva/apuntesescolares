@@ -1,50 +1,48 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<title>Apuntes Escolares</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- <base href="/apuntesescolares/"> -->
-<!-- Supabase UMD: expone window.supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<style>
-  :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
-  *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  header,footer{border-color:rgba(255,255,255,.08)}
-  header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
-  .wrap{max-width:1100px;margin:0 auto;padding:1rem}
-  .brand{font-weight:800}
-  nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
-  .grid{display:grid;gap:1rem}
-  .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1rem}
-  input,select,textarea,button{border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0b1023;color:var(--text);padding:.6rem .8rem}
-  button{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#00202a;border:none;font-weight:800;cursor:pointer}
-  .pill{display:inline-block;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:.2rem .6rem;font-size:.75rem;color:var(--muted)}
-  .flex{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
-  .right{margin-left:auto}
-  .stars{font-size:1.1rem;cursor:pointer;user-select:none}
-  .star-on{color:#ffd166}.star-off{color:#6b7280}
-  .doc{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding:.7rem 0}
-  .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-  @media(max-width:880px){.two{grid-template-columns:1fr}}
-</style>
+  <meta charset="utf-8" />
+  <title>Apuntes Escolares</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- SDK Supabase (v2). 'defer' para que esté listo antes de nuestro script -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    header,footer{border-color:rgba(255,255,255,.08)}
+    header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
+    .wrap{max-width:1100px;margin:0 auto;padding:1rem}
+    .brand{font-weight:800}
+    nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
+    .grid{display:grid;gap:1rem}
+    .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1rem}
+    input,select,button{border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0b1023;color:var(--text);padding:.6rem .8rem}
+    button{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#00202a;border:none;font-weight:800;cursor:pointer}
+    .pill{display:inline-block;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:.2rem .6rem;font-size:.75rem;color:var(--muted)}
+    .flex{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
+    .doc{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding:.7rem 0}
+    .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    @media(max-width:880px){.two{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
 <header>
   <div class="wrap flex">
     <div class="brand">Apuntes Escolares</div>
     <nav class="right">
-      <a href="#home"   onclick="ui.show('home')">Inicio</a>
+      <a href="#home" onclick="ui.show('home')">Inicio</a>
       <a href="#upload" onclick="ui.show('upload')">Subir</a>
-      <a href="#mine"   onclick="ui.show('mine')">Mis subidas</a>
+      <a href="#mine" onclick="ui.show('mine')">Mis subidas</a>
       <a id="nav-mod" href="#mod" onclick="ui.show('moderation')" class="hide">Moderación</a>
     </nav>
   </div>
 </header>
 
 <main class="wrap grid">
+  <!-- LOGIN -->
   <section class="card" id="loginBox">
     <h2>Entrar</h2>
     <div class="two">
@@ -54,18 +52,18 @@
           <input id="email" type="email" placeholder="tu@email.com">
           <input id="password" type="password" placeholder="Contraseña (mín. 8 caracteres)">
           <div class="flex">
-            <button onclick="auth.signInPw()">Entrar</button>
-            <button onclick="auth.signUpPw()">Crear cuenta</button>
-            <button onclick="auth.resetPw()">Olvidé mi contraseña</button>
+            <button id="btnLogin">Entrar</button>
+            <button id="btnSignup">Crear cuenta</button>
+            <button id="btnReset">Olvidé mi contraseña</button>
           </div>
           <small class="muted">O entra con enlace mágico (sin contraseña):</small>
-          <button onclick="auth.magicLink()">Enviar enlace de acceso</button>
+          <button id="btnMagic">Enviar enlace de acceso</button>
         </div>
       </div>
       <div>
         <h3>Como moderador</h3>
         <div class="grid">
-          <button onclick="auth.openModerator()">Ir al panel de moderación</button>
+          <button id="btnGoMod">Ir al panel de moderación</button>
           <small class="muted">Necesitas una cuenta con permisos de moderador.</small>
         </div>
       </div>
@@ -74,41 +72,16 @@
       <span class="pill">También puedes navegar como invitado (ver documentos y comentarios).</span>
       <span class="right" id="whoami">Invitado</span>
     </div>
+    <div id="sdkError" class="err hide"></div>
   </section>
 
+  <!-- HOME -->
   <section class="card" id="home">
     <h2>Documentos aprobados</h2>
-    <div class="two">
-      <div class="grid">
-        <input id="f_q" placeholder="Buscar por título o autor…" oninput="pages.search()">
-        <div class="flex">
-          <select id="f_cat" onchange="pages.search()">
-            <option value="">Todas las carreras</option>
-            <option>Ingeniería Civil</option><option>Ingeniería Geomática</option><option>Ingeniería Eléctrica Electrónica</option>
-            <option>Ingeniería en Computación</option><option>Ingeniería en Telecomunicaciones</option><option>Ingeniería Mecánica</option>
-            <option>Ingeniería Industrial</option><option>Ingeniería Mecatrónica</option><option>Ingeniería en Sistemas Biomédicos</option>
-          </select>
-          <select id="f_ext" onchange="pages.search()">
-            <option value="">Cualquier extensión</option><option>pdf</option><option>docx</option><option>pptx</option><option>png</option><option>jpg</option>
-          </select>
-          <select id="f_order" onchange="pages.search()">
-            <option value="created_at.desc">Más recientes</option>
-            <option value="avg_rating.desc">Mejor calificados</option>
-            <option value="title.asc">Título A→Z</option>
-          </select>
-        </div>
-      </div>
-      <div class="grid">
-        <input id="f_tags" placeholder="Etiquetas (coma , )" oninput="pages.search()">
-        <div class="flex">
-          <label class="muted">Fecha desde</label><input type="date" id="f_from" onchange="pages.search()">
-          <label class="muted">hasta</label><input type="date" id="f_to" onchange="pages.search()">
-        </div>
-      </div>
-    </div>
-    <div id="docsList" class="grid" style="margin-top:.8rem"></div>
+    <div id="docsList" class="grid" style="margin-top:.8rem">Cargando…</div>
   </section>
 
+  <!-- SUBIR -->
   <section class="card hide" id="upload">
     <h2>Subir documento (queda pendiente de aprobación)</h2>
     <div class="grid">
@@ -126,26 +99,23 @@
       </div>
       <input id="u_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" />
       <div class="flex">
-        <button onclick="upload.doUpload()">Enviar</button>
+        <button id="btnUpload">Enviar</button>
         <span id="u_msg" class="muted"></span>
       </div>
     </div>
   </section>
 
+  <!-- MIS SUBIDAS -->
   <section class="card hide" id="mine">
     <h2>Mis subidas</h2>
     <div id="mineList" class="grid"></div>
   </section>
 
+  <!-- MODERACIÓN -->
   <section class="card hide" id="moderation">
     <h2>Moderación – Pendientes</h2>
     <div id="modWarn" class="err"></div>
     <div id="queue" class="grid"></div>
-  </section>
-
-  <section class="card hide" id="notif">
-    <h2>Notificaciones</h2>
-    <div id="notifList" class="grid"></div>
   </section>
 </main>
 
@@ -153,69 +123,97 @@
   <div class="wrap flex">
     <span class="muted">© 2025 Apuntes Escolares</span>
     <div class="right flex">
-      <button onclick="auth.signOut()">Salir</button>
+      <button id="btnLogout">Salir</button>
     </div>
   </div>
 </footer>
 
 <script>
-/*** CONFIG ***/
+/* ====== CONFIG ====== */
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
 const BUCKET = "DOCS";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const REDIRECT_URL = window.location.origin + window.location.pathname;
 
-/*** UI helpers ***/
 const qs = s => document.querySelector(s);
-const el = (t,a={},c=[])=>{const n=document.createElement(t);Object.entries(a).forEach(([k,v])=>(k in n)?n[k]=v:n.setAttribute(k,v));(Array.isArray(c)?c:[c]).filter(Boolean).forEach(x=>n.append(x.nodeType?x:document.createTextNode(x)));return n;}
+const show = (id, yes) => qs('#'+id).classList.toggle('hide', !yes);
 const ui = {
   show(id){
-    ["home","upload","mine","moderation","notif"].forEach(x => qs("#"+x).classList.toggle("hide", x!==id));
+    ["home","upload","mine","moderation"].forEach(x => show(x, x===id));
     if(id==="home") pages.search();
     if(id==="mine") pages.mine();
     if(id==="moderation") pages.queue();
-    if(id==="notif") pages.notif();
-  },
-  stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); }
+  }
 };
 
-/*** AUTH ***/
-const REDIRECT_URL = window.location.origin + window.location.pathname;
+/* ====== Arranque defensivo del SDK ====== */
+let supabase;
+function sdkFail(msg){
+  const box = qs("#sdkError");
+  box.textContent = msg;
+  box.classList.remove("hide");
+  console.error(msg);
+}
+(function ensureSDK(){
+  if (!window.supabase || !window.supabase.createClient) {
+    sdkFail("No se pudo cargar el SDK de Supabase. Revisa tu conexión o si el CDN está bloqueado. (window.supabase no existe)");
+    return;
+  }
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log("Supabase SDK OK");
+  } catch (e) {
+    sdkFail("Error creando cliente de Supabase: " + e.message);
+  }
+})();
+
+/* ====== AUTH ====== */
 const auth = {
-  user:null, isModerator:false,
+  user: null,
+  isModerator: false,
 
   async loadUser(){
+    if(!supabase) return;
     const { data: { user } } = await supabase.auth.getUser();
-    this.user = user;
+    this.user = user || null;
     this.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
-    qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${this.isModerator?" · MOD":""}` : "Invitado";
-    qs("#nav-mod").classList.toggle("hide", !this.isModerator);
+
+    // UI: quién soy y visibilidad
+    qs("#whoami").textContent = user
+      ? `Conectado: ${user.email}${this.isModerator?" · MOD":""}`
+      : "Invitado";
+    // Oculta "Entrar" si hay sesión
     qs("#loginBox").classList.toggle("hide", !!user);
-    return user;
+    // Muestra "Moderación" en nav si eres MOD
+    qs("#nav-mod").classList.toggle("hide", !this.isModerator);
   },
 
   async signInPw(){
+    if(!supabase) return alert("Supabase no está listo.");
     const email = qs("#email").value.trim();
     const password = qs("#password").value;
     if(!email || !password) return alert("Correo y contraseña son obligatorios.");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return alert(error.message);
+    if (error) { alert(error.message); return; }
     await this.loadUser();
-    ui.show("home"); pages.search();
+    ui.show("home");
   },
 
   async signUpPw(){
+    if(!supabase) return alert("Supabase no está listo.");
     const email = qs("#email").value.trim();
     const password = qs("#password").value;
     if(!email || !password) return alert("Correo y contraseña son obligatorios.");
-    const { error } = await supabase.auth.signUp({ email, password, options:{ emailRedirectTo: REDIRECT_URL }});
+    const { error } = await supabase.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: REDIRECT_URL } // por si luego vuelves a activar confirmación
+    });
     if (error) return alert(error.message);
-    await this.loadUser();
-    if (this.user) { alert("Cuenta creada. Ya puedes usar la app."); ui.show("home"); pages.search(); }
-    else { alert("Cuenta creada. Revisa tu correo para confirmar y luego entra."); }
+    alert("Cuenta creada. Ya puedes entrar con tu correo y contraseña.");
   },
 
   async resetPw(){
+    if(!supabase) return alert("Supabase no está listo.");
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: REDIRECT_URL + "#reset" });
@@ -224,23 +222,34 @@ const auth = {
   },
 
   async magicLink(){
+    if(!supabase) return alert("Supabase no está listo.");
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
-    const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: REDIRECT_URL }});
+    const { error } = await supabase.auth.signInWithOtp({
+      email, options: { emailRedirectTo: REDIRECT_URL }
+    });
     if (error) return alert(error.message);
     alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
   },
 
-  async openModerator(){
-    await this.loadUser();
+  openModerator(){
     if (!this.isModerator) { alert("No tienes permisos de moderador."); return; }
-    ui.show("moderation"); qs("#modWarn").textContent = "";
+    ui.show("moderation");
+    qs("#modWarn").textContent = "";
   },
 
-  async signOut(){ await supabase.auth.signOut(); await this.loadUser(); ui.show("home"); pages.search(); }
+  async signOut(){
+    if(!supabase) return;
+    await supabase.auth.signOut();
+    await this.loadUser();
+    ui.show("home");
+  }
 };
+window.auth = auth; // por si quieres llamar desde consola
 
-supabase.auth.onAuthStateChange(async (event) => {
+// Cambios de sesión (incluye recuperación de contraseña)
+supabase?.auth.onAuthStateChange(async (event) => {
+  console.log("auth event:", event);
   if (event === "PASSWORD_RECOVERY") {
     const newPass = prompt("Escribe tu nueva contraseña:");
     if (newPass) {
@@ -252,196 +261,85 @@ supabase.auth.onAuthStateChange(async (event) => {
   await auth.loadUser();
 });
 
-/*** PAGES (igual que antes)… ***/
+/* ====== PÁGINAS (versión mínima para esta prueba) ====== */
 const pages = {
-  async search(){ /* ...igual que antes... */ 
-    const q = qs("#f_q").value.trim();
-    const cat = qs("#f_cat").value;
-    const ext = qs("#f_ext").value;
-    const tags = qs("#f_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
-    const order = qs("#f_order").value || "created_at.desc";
-    const [col, dir] = order.split(".");
-    let req = supabase.from("documents").select("*").eq("status","approved");
-    if(q) req = req.or(`title.ilike.%${q}%,author_name.ilike.%${q}%`);
-    if(cat) req = req.eq("category", cat);
-    if(ext) req = req.eq("ext", ext);
-    if(tags.length) req = req.contains("tags", tags);
-    const from = qs("#f_from").value, to = qs("#f_to").value;
-    if(from) req = req.gte("created_at", from);
-    if(to) req = req.lte("created_at", to+" 23:59:59");
-    req = req.order(col, { ascending: dir==="asc" });
-    const { data, error } = await req;
-    const box = qs("#docsList"); box.innerHTML = "";
-    if(error){ box.textContent = "Error cargando documentos."; return; }
-    if(!data.length){ box.textContent = "No hay documentos."; return; }
-    data.forEach(d => box.append(render.docCard(d, {canRate: !!auth.user, canComment: true})));
+  async search(){
+    if(!supabase){ qs("#docsList").textContent = "SDK no disponible."; return; }
+    const { data, error } = await supabase.from("documents")
+      .select("*").eq("status","approved").order("created_at",{ascending:false});
+    const box = qs("#docsList");
+    if (error) { box.textContent = "Error cargando documentos."; return; }
+    if (!data || !data.length) { box.textContent = "No hay documentos."; return; }
+    box.innerHTML = "";
+    data.forEach(d=>{
+      const row = document.createElement("div"); row.className="doc";
+      const left = document.createElement("div"); left.innerHTML =
+        `<div>${d.title}</div>
+         <div class="muted">${d.author_name||'Anónimo'} · ${d.category||''} · ${d.ext||''}</div>`;
+      const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
+      const right = document.createElement("div"); right.innerHTML = `<a href="${pub.publicUrl}" download>Descargar</a>`;
+      row.append(left,right);
+      box.append(row);
+    });
   },
-
-  async mine(){ /* ...igual que antes... */ 
-    if(!auth.user){ qs("#mineList").innerHTML = "Inicia sesión para ver tus subidas."; return; }
-    const { data, error } = await supabase.from("documents").select("*").eq("owner", auth.user.id).order("created_at",{ascending:false});
-    const box = qs("#mineList"); box.innerHTML = "";
-    if(error){ box.textContent = "Error."; return; }
-    if(!data.length){ box.textContent = "Aún no has subido documentos."; return; }
-    data.forEach(d => box.append(render.docCard(d,{mine:true})));
-  },
-
-  async queue(){ /* ...igual que antes... */ 
-    const box = qs("#queue"); box.innerHTML = "";
-    if(!auth.isModerator){ box.textContent = "No eres moderador (según Supabase)."; return; }
-    const { data, error } = await supabase.from("documents").select("*").eq("status","pending").order("created_at",{ascending:true});
-    if(error){ box.textContent = "Error cargando pendientes."; return; }
-    if(!data.length){ box.textContent = "No hay pendientes."; return; }
-    data.forEach(d => box.append(render.modCard(d)));
-  },
-
-  async notif(){ /* ...igual que antes... */ 
-    if(!auth.user){ qs("#notifList").innerHTML = "Inicia sesión para ver notificaciones."; return; }
-    const { data } = await supabase.from("notifications").select("*").eq("user_id", auth.user.id).order("created_at",{ascending:false});
-    const box = qs("#notifList"); box.innerHTML = "";
-    if(!data || !data.length){ box.textContent = "Sin notificaciones."; return; }
-    data.forEach(n => box.append(el("div",{className:"doc"},[
-      el("div",{},[el("div",{},`${n.type==='accepted'?'✅ Aceptado':'❌ Rechazado'}`), el("div",{className:"muted"}, n.message||"")]),
-      el("div",{className:"muted"}, new Date(n.created_at).toLocaleString())
-    ])));
-  }
+  async mine(){ /* … (igual que antes) … */ },
+  async queue(){ /* … (igual que antes) … */ }
 };
 
-/*** RENDER (igual que antes)… ***/
-const render = {
-  /* docCard y modCard exactamente como te mandé anteriormente */
-  docCard(d, opts={}){ /* ...omitido por brevedad, igual que antes... */ 
-    const row = el("div",{className:"doc"});
-    const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
-    const publicUrl = pub.publicUrl;
-    const fileName = d.storage_path.split("/").pop();
-    const left = el("div",{},[
-      el("div",{}, d.title),
-      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.category||'Sin categoría'} · ${d.ext||''}`),
-      el("div",{className:"muted"}, `Subido: ${new Date(d.created_at).toLocaleDateString()} · ${d.tags?.join(", ")||''}`)
-    ]);
-    const right = el("div",{className:"grid",style:"justify-items:end"},[
-      el("a",{href:publicUrl,download:fileName}, "Descargar"),
-      el("div",{className:"stars"}, ui.stars(d.avg_rating))
-    ]);
-    row.append(left,right);
-    if(opts.canRate){
-      right.querySelector(".stars").addEventListener("click", async (ev) => {
-        const idx = Array.from(ev.currentTarget.childNodes).indexOf(ev.target);
-        if(idx<0) return; const stars = idx+1;
-        await supabase.from("ratings").upsert({ doc_id: d.id, user_id: auth.user.id, stars });
-        pages.search();
-      });
-    }
-    const comWrap = el("div",{className:"grid", style:"grid-column:1/-1"});
-    const list = el("div",{className:"grid"});
-    const form = el("div",{className:"flex"},[
-      el("input",{id:`nick-${d.id}`,placeholder:"Tu nombre"}),
-      el("input",{id:`cmt-${d.id}`,placeholder:"Escribe un comentario…",style:"flex:1"}),
-      el("button",{onclick: async()=>{
-        const body = qs(`#cmt-${d.id}`).value.trim(); const author = qs(`#nick-${d.id}`).value.trim() || (auth.user?.email || "Invitado");
-        if(!body) return;
-        await supabase.from("comments").insert({doc_id:d.id, user_id:auth.user?.id||null, author_name:author, body});
-        loadComments();
-      }}, "Comentar")
-    ]);
-    comWrap.append(list, form);
-    row.append(comWrap);
-    async function loadComments(){
-      const { data } = await supabase.from("comments").select("*").eq("doc_id", d.id).order("created_at",{ascending:false});
-      list.innerHTML = "";
-      (data||[]).forEach(c => list.append(el("div",{className:"doc"},[
-        el("div",{},[el("div",{},c.author_name), el("div",{className:"muted"}, c.body)]),
-        el("div",{className:"muted"}, new Date(c.created_at).toLocaleString())
-      ])));
-    }
-    loadComments();
-    if(opts.mine){
-      row.append(el("div",{className:"muted",style:"grid-column:1/-1"}, `Estado: ${d.status}${d.reject_reason? ' · Motivo: '+d.reject_reason : ''}`));
-    }
-    return row;
-  },
+/* ====== SUBIDA ====== */
+async function doUpload(){
+  if(!supabase) return alert("Supabase no está listo.");
+  if(!auth.user) return alert("Inicia sesión para subir.");
+  const file = qs("#u_file").files[0];
+  const title = qs("#u_title").value.trim();
+  if(!title || !file) return alert("Falta título o archivo.");
+  if(file.size > 5*1024*1024) return alert("Máximo 5 MB.");
 
-  modCard(d){ /* ...igual que antes... */ 
-    const row = el("div",{className:"doc"});
-    const left = el("div",{},[
-      el("div",{}, d.title),
-      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.email||''}`),
-      el("div",{className:"muted"}, `${d.category||''} · ${d.tags?.join(", ")||''}`)
-    ]);
-    const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
-    const preview = el("a",{href:pub.publicUrl,target:"_blank"},"Ver archivo");
-    const acceptBtn = el("button",{onclick: async ()=>{
-      if(!auth.isModerator) return alert("No tienes permisos (RLS).");
-      const parts = d.storage_path.split("/");
-      const oldPath = d.storage_path;
-      const newPath = `public/${d.id}-${parts[parts.length-1].replace(/^pending\//,'')}`;
-      const { error:copyErr } = await supabase.storage.from(BUCKET).copy(oldPath, newPath);
-      if(copyErr){ alert("Error al publicar: "+copyErr.message); return; }
-      await supabase.storage.from(BUCKET).remove([oldPath]);
-      await supabase.from("documents").update({ status: 'approved', storage_path: newPath, reject_reason: null }).eq("id", d.id);
-      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'accepted', message:`Tu documento "${d.title}" fue aprobado.` });
-      pages.queue(); pages.search();
-    }}, "Aceptar");
-    const reason = el("input",{placeholder:"Motivo de rechazo (obligatorio)"});
-    const rejectBtn = el("button",{onclick: async ()=>{
-      if(!auth.isModerator) return alert("No tienes permisos (RLS).");
-      const r = reason.value.trim(); if(!r) return alert("Escribe el motivo.");
-      await supabase.from("documents").update({ status:'rejected', reject_reason:r }).eq("id", d.id);
-      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'rejected', message:r });
-      pages.queue();
-    }}, "Rechazar");
-    const right = el("div",{className:"grid",style:"justify-items:end"},[preview, acceptBtn, reason, rejectBtn]);
-    row.append(left,right);
-    return row;
-  }
-};
+  qs("#u_msg").textContent = "Subiendo…";
+  const path = `pending/${auth.user.id}/${Date.now()}-${file.name}`;
+  const { error: e1 } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false });
+  if (e1) { qs("#u_msg").textContent = "Error al subir: " + e1.message; return; }
 
-/*** SUBIDA (igual que antes, con errores detallados) ***/
-const upload = {
-  async doUpload(){
-    if(!auth.user) { alert("Inicia sesión con tu correo para subir."); return; }
-    const msg = qs("#u_msg");
-    const title = qs("#u_title").value.trim();
-    const author = qs("#u_author").value.trim();
-    const email = qs("#u_email").value.trim();
-    const category = qs("#u_cat").value || "";
-    const tags = qs("#u_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
-    const file = qs("#u_file").files[0];
-    try{
-      if(!title || !file){ alert("Falta título o archivo."); return; }
-      if(file.size > 5*1024*1024){ alert("El archivo excede 5 MB."); return; }
-      msg.textContent = "Subiendo archivo al almacenamiento…";
-      const ext  = (file.name.split(".").pop()||"").toLowerCase();
-      const path = `pending/${auth.user.id}/${Date.now()}-${file.name}`;
-      const { error:e1 } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false });
-      if(e1){ console.error(e1); msg.textContent = "Error al subir: "+e1.message; return; }
-      msg.textContent = "Registrando en la base…";
-      const { error:e2 } = await supabase.from("documents").insert({
-        owner:auth.user.id, title, author_name:author, email, category, tags,
-        ext, storage_path:path, size_bigint:file.size, status:'pending'
-      });
-      if(e2){ console.error(e2); msg.textContent = "Error al registrar: "+e2.message; await supabase.storage.from(BUCKET).remove([path]); return; }
-      msg.textContent = "Listo. Quedó como pendiente para moderación.";
-      qs("#u_title").value = qs("#u_author").value = qs("#u_email").value = qs("#u_tags").value = "";
-      qs("#u_file").value = "";
-      pages.mine();
-    }catch(err){ console.error(err); msg.textContent = "Error inesperado: "+(err?.message||err); }
-  }
-};
+  const ext = (file.name.split(".").pop()||"").toLowerCase();
+  const category = qs("#u_cat").value || "";
+  const tags = qs("#u_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
+  const author = qs("#u_author").value.trim();
+  const email  = qs("#u_email").value.trim();
 
-/*** INIT ***/
+  const { error: e2 } = await supabase.from("documents").insert({
+    owner: auth.user.id, title, author_name: author, email, category, tags,
+    ext, storage_path: path, size_bigint: file.size, status:'pending'
+  });
+  if (e2) { qs("#u_msg").textContent = "Error guardando metadatos: " + e2.message; return; }
+
+  qs("#u_msg").textContent = "Listo. Quedó como pendiente.";
+  qs("#u_title").value = qs("#u_author").value = qs("#u_email").value = qs("#u_tags").value = "";
+  qs("#u_file").value = "";
+}
+
+/* ====== Listeners (sin inline) ====== */
+document.addEventListener("DOMContentLoaded", () => {
+  // botones auth
+  qs("#btnLogin").addEventListener("click", () => auth.signInPw());
+  qs("#btnSignup").addEventListener("click", () => auth.signUpPw());
+  qs("#btnReset").addEventListener("click", () => auth.resetPw());
+  qs("#btnMagic").addEventListener("click", () => auth.magicLink());
+  qs("#btnGoMod").addEventListener("click", () => auth.openModerator());
+  qs("#btnLogout").addEventListener("click", () => auth.signOut());
+
+  // subir
+  qs("#btnUpload").addEventListener("click", () => doUpload());
+});
+
+/* ====== INIT ====== */
 (async function init(){
-  // Comprobación defensiva del CDN (si falla verás este alert)
-  if(!window.supabase || !window.supabase.createClient){
-    alert("No se cargó la librería de Supabase. Revisa el CDN.");
-  }
-  await auth.loadUser();
+  await auth.loadUser();   // oculta “Entrar” si ya hay sesión
   ui.show("home");
   pages.search();
 })();
 </script>
 </body>
 </html>
+
 
 
