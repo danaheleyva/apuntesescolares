@@ -4,15 +4,15 @@
   <meta charset="utf-8" />
   <title>Apuntes Escolares</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- GitHub Pages: si algo de rutas se rompe, deja activo el <base>. -->
-  <base href="/apuntesescolares/">
+  <!-- Si notas rutas rotas en GitHub Pages, descomenta la base -->
+  <!-- <base href="/apuntesescolares/"> -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    header,footer{border-color:rgba(255,255,255,.08)}
-    header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    header,footer{border-color:rgba(255,255,255,.08)} header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
     .wrap{max-width:1100px;margin:0 auto;padding:1rem}
     .brand{font-weight:800}
     nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
@@ -27,8 +27,7 @@
     .star-on{color:#ffd166}.star-off{color:#6b7280}
     .doc{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding:.7rem 0}
     .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-    .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-    @media(max-width:880px){.two{grid-template-columns:1fr}}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem} @media(max-width:880px){.two{grid-template-columns:1fr}}
   </style>
 </head>
 
@@ -83,18 +82,18 @@
     <h2>Documentos aprobados</h2>
     <div class="two">
       <div class="grid">
-        <input id="f_q" placeholder="Buscar por título o autor…" />
+        <input id="f_q" placeholder="Buscar por título o autor…" oninput="pages.search()" />
         <div class="flex">
-          <select id="f_cat">
+          <select id="f_cat" onchange="pages.search()">
             <option value="">Todas las carreras</option>
             <option>Ingeniería Civil</option><option>Ingeniería Geomática</option><option>Ingeniería Eléctrica Electrónica</option>
             <option>Ingeniería en Computación</option><option>Ingeniería en Telecomunicaciones</option><option>Ingeniería Mecánica</option>
             <option>Ingeniería Industrial</option><option>Ingeniería Mecatrónica</option><option>Ingeniería en Sistemas Biomédicos</option>
           </select>
-          <select id="f_ext">
+          <select id="f_ext" onchange="pages.search()">
             <option value="">Cualquier extensión</option><option>pdf</option><option>docx</option><option>pptx</option><option>png</option><option>jpg</option>
           </select>
-          <select id="f_order">
+          <select id="f_order" onchange="pages.search()">
             <option value="created_at.desc">Más recientes</option>
             <option value="avg_rating.desc">Mejor calificados</option>
             <option value="title.asc">Título A→Z</option>
@@ -102,10 +101,10 @@
         </div>
       </div>
       <div class="grid">
-        <input id="f_tags" placeholder="Etiquetas (coma , )" />
+        <input id="f_tags" placeholder="Etiquetas (coma , )" oninput="pages.search()" />
         <div class="flex">
-          <label class="muted">Fecha desde</label><input type="date" id="f_from" />
-          <label class="muted">hasta</label><input type="date" id="f_to" />
+          <label class="muted">Fecha desde</label><input type="date" id="f_from" onchange="pages.search()" />
+          <label class="muted">hasta</label><input type="date" id="f_to" onchange="pages.search()" />
         </div>
       </div>
     </div>
@@ -165,19 +164,20 @@
   </div>
 </footer>
 
-<!-- 1) SDK de Supabase SIEMPRE antes de tu script -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- 2) Tu app -->
 <script>
 /*** CONFIG SUPABASE ***/
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
 const BUCKET = "DOCS";
-if (!window.supabase) alert("No se pudo cargar el SDK de Supabase (revisa tu conexión o bloqueadores).");
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
 
-const REDIRECT_URL = window.location.origin + window.location.pathname;
+/*** Fallback temporal de moderadores por correo (UI). Cambia por los tuyos. ***/
+const ALLOW_MOD_EMAILS = [
+  "danahe.leyva@gmail.com",
+  "danahle.leyva@gmail.com"
+];
 
 /*** HELPERS UI ***/
 const qs = s => document.querySelector(s);
@@ -192,27 +192,47 @@ const ui = {
   },
   stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); },
   applyAuthState(user, isModerator){
-    // Mostrar quién es
     qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${isModerator?" · MOD":""}` : "Invitado";
-    // Ocultar/mostrar bloque Entrar
     qs("#loginBox").classList.toggle("hide", !!user);
-    // Mostrar/ocultar opción Moderación
     qs("#nav-mod").classList.toggle("hide", !isModerator);
   }
 };
 
 /*** AUTH ***/
+const REDIRECT_URL = window.location.origin + window.location.pathname;
+
 const auth = {
   user: null,
   isModerator: false,
 
   async loadUser(){
+    // Asegura que el token incluya metadatos recientes
+    await supabase.auth.refreshSession().catch(()=>{});
+
     const { data: { user } } = await supabase.auth.getUser();
     this.user = user || null;
-    const meta = user?.app_metadata || {};
-    this.isModerator = !!meta.is_moderator;
+
+    // Toma is_moderator de app_metadata o user_metadata
+    let isMod = !!(user?.app_metadata?.is_moderator || user?.user_metadata?.is_moderator);
+
+    // Fallback por correo (UI)
+    if (!isMod && user?.email) {
+      const mail = user.email.toLowerCase();
+      if (ALLOW_MOD_EMAILS.includes(mail)) isMod = true;
+    }
+
+    this.isModerator = isMod;
     ui.applyAuthState(this.user, this.isModerator);
-    return user;
+
+    // Debug útil (F12 → Console) para ver qué llega desde Supabase
+    console.debug("Auth user:", {
+      email: user?.email,
+      app_metadata: user?.app_metadata,
+      user_metadata: user?.user_metadata,
+      isModerator: this.isModerator
+    });
+
+    return this.user;
   },
 
   async signInPw(){
@@ -258,7 +278,9 @@ const auth = {
     alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
   },
 
-  openModerator(){
+  async openModerator(){
+    // Refresca el estado justo antes por si el usuario acaba de loguearse
+    await this.loadUser();
     if (!this.isModerator) { alert("No tienes permisos de moderador."); return; }
     ui.show("moderation");
     qs("#modWarn").textContent = "";
@@ -272,7 +294,7 @@ const auth = {
   }
 };
 
-// Manejo de recuperación de contraseña + cambios de sesión
+// Cambios de sesión (incluye password recovery)
 supabase.auth.onAuthStateChange(async (event) => {
   if (event === "PASSWORD_RECOVERY") {
     const newPass = prompt("Escribe tu nueva contraseña:");
@@ -285,7 +307,7 @@ supabase.auth.onAuthStateChange(async (event) => {
   await auth.loadUser();
 });
 
-/*** PÁGINAS Y CONSULTAS ***/
+/*** PÁGINAS ***/
 const pages = {
   async search(){
     const q = qs("#f_q").value.trim();
@@ -472,18 +494,10 @@ const upload = {
   qs("#btn-mod").addEventListener("click", ()=>auth.openModerator());
   qs("#btn-logout").addEventListener("click", ()=>auth.signOut());
 
-  // Filtros búsqueda
-  ["f_q","f_cat","f_ext","f_tags","f_order","f_from","f_to"].forEach(id=>{
-    const x = qs("#"+id); if(x) x.addEventListener("input", ()=>pages.search());
-    if(id==="f_cat"||id==="f_ext"||id==="f_order"||id==="f_from"||id==="f_to"){
-      const y = qs("#"+id); if(y) y.addEventListener("change", ()=>pages.search());
-    }
-  });
-
   // Subida
   qs("#btn-upload").addEventListener("click", ()=>upload.doUpload());
 
-  // Cargar estado
+  // Arranque
   auth.loadUser().then(()=>{ ui.show("home"); pages.search(); });
 })();
 </script>
