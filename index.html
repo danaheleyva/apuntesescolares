@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <title>Apuntes Escolares</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Descomenta si notas rutas rotas en GitHub Pages -->
-<!-- <base href="/apuntesescolares/"> -->
+<!-- <base href="/apuntesescolares/">  Descomenta si notas rutas rotas en GitHub Pages -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
-  *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  header,footer{border-color:rgba(255,255,255,.08)} header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  header,footer{border-color:rgba(255,255,255,.08)}
+  header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
   .wrap{max-width:1100px;margin:0 auto;padding:1rem}
   .brand{font-weight:800}
   nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
@@ -162,11 +163,15 @@
 </footer>
 
 <script>
-/*** CONFIG DE SUPABASE (TU PROYECTO) ***/
+/*** SUPABASE ***/
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
-const BUCKET = "DOCS"; // público lectura; subidas autenticadas
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const BUCKET = "DOCS";
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  { auth: { persistSession: true, autoRefreshToken: true } } // clave para no quedar "Invitado"
+);
 
 /*** HELPERS UI ***/
 const qs = s => document.querySelector(s);
@@ -193,9 +198,12 @@ const auth = {
     const { data: { user } } = await supabase.auth.getUser();
     this.user = user;
     this.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
+    // UI: quién soy + mostrar/ocultar Moderación y Login
     qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${this.isModerator?" · MOD":""}` : "Invitado";
     const navMod = qs("#nav-mod");
     if (navMod) navMod.classList.toggle("hide", !this.isModerator);
+    const loginBox = qs("#loginBox");
+    if (loginBox) loginBox.classList.toggle("hide", !!user);
     return user;
   },
 
@@ -212,12 +220,14 @@ const auth = {
     const email = qs("#email").value.trim();
     const password = qs("#password").value;
     if(!email || !password) return alert("Correo y contraseña son obligatorios.");
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { emailRedirectTo: REDIRECT_URL }
-    });
+    // Con "Confirm email" APAGADO, Supabase devuelve data.session y entra directo
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return alert(error.message);
-    alert("Cuenta creada. Revisa tu correo para confirmar y vuelve a entrar.");
+    if (data.session) {
+      location.reload(); // ya hay sesión activa
+    } else {
+      alert("Te enviamos un correo para confirmar tu cuenta. Abre el enlace para terminar el registro.");
+    }
   },
 
   async resetPw(){
@@ -250,7 +260,7 @@ const auth = {
   async signOut(){ await supabase.auth.signOut(); location.reload(); }
 };
 
-// Escucha cambios de sesión y también maneja recuperación de contraseña
+// Cambios de sesión (y recuperación de contraseña)
 supabase.auth.onAuthStateChange(async (event) => {
   if (event === "PASSWORD_RECOVERY") {
     const newPass = prompt("Escribe tu nueva contraseña:");
@@ -263,7 +273,7 @@ supabase.auth.onAuthStateChange(async (event) => {
   await auth.loadUser();
 });
 
-/*** LISTADO + BÚSQUEDA ***/
+/*** PÁGINAS ***/
 const pages = {
   async search(){
     const q = qs("#f_q").value.trim();
@@ -447,5 +457,6 @@ const upload = {
 </script>
 </body>
 </html>
+
 
 
