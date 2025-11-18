@@ -4,19 +4,25 @@
 <meta charset="utf-8">
 <title>Apuntes Escolares</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- <base href="/apuntesescolares/">  <-- descomenta si notas rutas rotas en GitHub Pages -->
+<!-- Descomenta si notas rutas rotas en GitHub Pages -->
+<!-- <base href="/apuntesescolares/"> -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
   *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
   header,footer{border-color:rgba(255,255,255,.08)} header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
-  .wrap{max-width:1100px;margin:0 auto;padding:1rem} .brand{font-weight:800} nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
-  .grid{display:grid;gap:1rem} .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1rem}
+  .wrap{max-width:1100px;margin:0 auto;padding:1rem}
+  .brand{font-weight:800}
+  nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
+  .grid{display:grid;gap:1rem}
+  .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1rem}
   input,select,textarea,button{border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#0b1023;color:var(--text);padding:.6rem .8rem}
   button{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#00202a;border:none;font-weight:800;cursor:pointer}
   .pill{display:inline-block;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:.2rem .6rem;font-size:.75rem;color:var(--muted)}
-  .flex{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap} .right{margin-left:auto}
-  .stars{font-size:1.1rem;cursor:pointer;user-select:none} .star-on{color:#ffd166} .star-off{color:#6b7280}
+  .flex{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+  .right{margin-left:auto}
+  .stars{font-size:1.1rem;cursor:pointer;user-select:none}
+  .star-on{color:#ffd166}.star-off{color:#6b7280}
   .doc{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding:.7rem 0}
   .muted{color:var(--muted)} .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem} @media(max-width:880px){.two{grid-template-columns:1fr}}
@@ -36,7 +42,7 @@
 </header>
 
 <main class="wrap grid">
-  <!-- Login -->
+  <!-- LOGIN -->
   <section class="card" id="loginBox">
     <h2>Entrar</h2>
     <div class="two">
@@ -44,8 +50,14 @@
         <h3>Como usuario</h3>
         <div class="grid">
           <input id="email" type="email" placeholder="tu@email.com">
+          <input id="password" type="password" placeholder="Contraseña (mín. 8 caracteres)">
+          <div class="flex">
+            <button onclick="auth.signInPw()">Entrar</button>
+            <button onclick="auth.signUpPw()">Crear cuenta</button>
+            <button onclick="auth.resetPw()">Olvidé mi contraseña</button>
+          </div>
+          <small class="muted">O entra con enlace mágico (sin contraseña):</small>
           <button onclick="auth.magicLink()">Enviar enlace de acceso</button>
-          <small class="muted">Revisa tu correo y vuelve con el enlace.</small>
         </div>
       </div>
       <div>
@@ -58,11 +70,11 @@
     </div>
     <div class="flex muted" style="margin-top:.5rem">
       <span class="pill">También puedes navegar como invitado (ver documentos y comentarios).</span>
-      <span class="right" id="whoami"></span>
+      <span class="right" id="whoami">Invitado</span>
     </div>
   </section>
 
-  <!-- HOME: filtros + lista -->
+  <!-- HOME -->
   <section class="card" id="home">
     <h2>Documentos aprobados</h2>
     <div class="two">
@@ -150,21 +162,15 @@
 </footer>
 
 <script>
-/*** CONFIG (con tus datos) ***/
+/*** CONFIG DE SUPABASE (TU PROYECTO) ***/
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
-const BUCKET = "DOCS"; // mayúsculas
-
+const BUCKET = "DOCS"; // público lectura; subidas autenticadas
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/*** UI helpers ***/
+/*** HELPERS UI ***/
 const qs = s => document.querySelector(s);
-const el = (tag, attrs={}, children=[]) => {
-  const n = document.createElement(tag);
-  Object.entries(attrs).forEach(([k,v]) => (k in n) ? n[k]=v : n.setAttribute(k,v));
-  (Array.isArray(children)?children:[children]).filter(Boolean).forEach(c=>n.append(c.nodeType?c:document.createTextNode(c)));
-  return n;
-};
+const el = (t,a={},c=[])=>{const n=document.createElement(t);Object.entries(a).forEach(([k,v])=>(k in n)?n[k]=v:n.setAttribute(k,v));(Array.isArray(c)?c:[c]).filter(Boolean).forEach(x=>n.append(x.nodeType?x:document.createTextNode(x)));return n;}
 const ui = {
   show(id){
     ["home","upload","mine","moderation","notif"].forEach(x => qs("#"+x).classList.toggle("hide", x!==id));
@@ -177,38 +183,85 @@ const ui = {
 };
 
 /*** AUTH ***/
+const REDIRECT_URL = window.location.origin + window.location.pathname;
+
 const auth = {
   user: null,
   isModerator: false,
 
   async loadUser(){
     const { data: { user } } = await supabase.auth.getUser();
-    auth.user = user;
-    auth.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
-    const badge = user ? `Conectado: ${user.email||"usuario"}${auth.isModerator?" · MOD":""}` : "Invitado";
-    qs("#whoami").textContent = badge;
-    // mostrar/ocultar enlace de moderación
+    this.user = user;
+    this.isModerator = !!(user && user.app_metadata && user.app_metadata.is_moderator);
+    qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${this.isModerator?" · MOD":""}` : "Invitado";
     const navMod = qs("#nav-mod");
-    if (navMod) navMod.classList.toggle("hide", !auth.isModerator);
+    if (navMod) navMod.classList.toggle("hide", !this.isModerator);
     return user;
+  },
+
+  async signInPw(){
+    const email = qs("#email").value.trim();
+    const password = qs("#password").value;
+    if(!email || !password) return alert("Correo y contraseña son obligatorios.");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return alert(error.message);
+    location.reload();
+  },
+
+  async signUpPw(){
+    const email = qs("#email").value.trim();
+    const password = qs("#password").value;
+    if(!email || !password) return alert("Correo y contraseña son obligatorios.");
+    const { error } = await supabase.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: REDIRECT_URL }
+    });
+    if (error) return alert(error.message);
+    alert("Cuenta creada. Revisa tu correo para confirmar y vuelve a entrar.");
+  },
+
+  async resetPw(){
+    const email = qs("#email").value.trim();
+    if(!email) return alert("Escribe tu correo.");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: REDIRECT_URL + "#reset"
+    });
+    if (error) return alert(error.message);
+    alert("Te envié un correo para restablecer tu contraseña.");
   },
 
   async magicLink(){
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
-    await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: REDIRECT_URL }
+    });
+    if (error) return alert(error.message);
     alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
   },
 
   async openModerator(){
-    if (!auth.isModerator) { alert("No tienes permisos de moderador."); return; }
+    if (!this.isModerator) { alert("No tienes permisos de moderador."); return; }
     ui.show("moderation");
     qs("#modWarn").textContent = "";
   },
 
   async signOut(){ await supabase.auth.signOut(); location.reload(); }
 };
-supabase.auth.onAuthStateChange(async () => { await auth.loadUser(); });
+
+// Escucha cambios de sesión y también maneja recuperación de contraseña
+supabase.auth.onAuthStateChange(async (event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    const newPass = prompt("Escribe tu nueva contraseña:");
+    if (newPass) {
+      const { error } = await supabase.auth.updateUser({ password: newPass });
+      if (error) alert(error.message);
+      else alert("Contraseña actualizada. Vuelve a entrar con ella.");
+    }
+  }
+  await auth.loadUser();
+});
 
 /*** LISTADO + BÚSQUEDA ***/
 const pages = {
@@ -255,7 +308,7 @@ const pages = {
 
   async notif(){
     if(!auth.user){ qs("#notifList").innerHTML = "Inicia sesión para ver notificaciones."; return; }
-    const { data } = await supabase.from("notifications").select("*").order("created_at",{ascending:false});
+    const { data } = await supabase.from("notifications").select("*").eq("user_id", auth.user.id).order("created_at",{ascending:false});
     const box = qs("#notifList"); box.innerHTML = "";
     if(!data || !data.length){ box.textContent = "Sin notificaciones."; return; }
     data.forEach(n => box.append(el("div",{className:"doc"},[
@@ -358,7 +411,7 @@ const render = {
   }
 };
 
-/*** SUBIR ***/
+/*** SUBIDA ***/
 const upload = {
   async doUpload(){
     if(!auth.user) { alert("Inicia sesión con tu correo para subir."); return; }
@@ -394,4 +447,5 @@ const upload = {
 </script>
 </body>
 </html>
+
 
