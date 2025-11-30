@@ -4,9 +4,6 @@
   <meta charset="utf-8" />
   <title>Apuntes Escolares</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Si notas rutas rotas en GitHub Pages, descomenta la base -->
-  <!-- <base href="/apuntesescolares/"> -->
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -45,7 +42,6 @@
 </header>
 
 <main class="wrap grid">
-  <!-- LOGIN -->
   <section class="card" id="loginBox">
     <h2>Entrar</h2>
     <div class="two">
@@ -77,7 +73,6 @@
     </div>
   </section>
 
-  <!-- HOME -->
   <section class="card" id="home">
     <h2>Documentos aprobados</h2>
     <div class="two">
@@ -111,7 +106,6 @@
     <div id="docsList" class="grid" style="margin-top:.8rem"></div>
   </section>
 
-  <!-- SUBIR -->
   <section class="card hide" id="upload">
     <h2>Subir documento (queda pendiente de aprobación)</h2>
     <div class="grid">
@@ -135,20 +129,17 @@
     </div>
   </section>
 
-  <!-- MIS SUBIDAS -->
   <section class="card hide" id="mine">
     <h2>Mis subidas</h2>
     <div id="mineList" class="grid"></div>
   </section>
 
-  <!-- MODERACIÓN -->
   <section class="card hide" id="moderation">
     <h2>Moderación – Pendientes</h2>
     <div id="modWarn" class="err"></div>
     <div id="queue" class="grid"></div>
   </section>
 
-  <!-- NOTIFICACIONES -->
   <section class="card hide" id="notif">
     <h2>Notificaciones</h2>
     <div id="notifList" class="grid"></div>
@@ -165,24 +156,30 @@
 </footer>
 
 <script>
-/*** CONFIG SUPABASE ***/
-const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb2VlYW1vdGZhamNwb2RueGlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MjA2NDgsImV4cCI6MjA3ODk5NjY0OH0.fCas1O8XLgWwYww0l99VThswjWwlo_rGDOpMJ5Z_GXk";
+/**
+ * ==========================================
+ * CONFIGURACIÓN DE SUPABASE
+ * Reemplaza los placeholders con tus datos reales
+ * ==========================================
+ */
+const SUPABASE_URL = "<TU_SUPABASE_URL>";
+const SUPABASE_ANON_KEY = "<TU_SUPABASE_ANON_KEY>";
 const BUCKET = "DOCS";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true }
-});
 
-/*** Fallback temporal de moderadores por correo (UI). Cambia por los tuyos. ***/
-const ALLOW_MOD_EMAILS = [
-  "danahe.leyva@gmail.com",
-  "danahle.leyva@gmail.com"
-];
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 
 /*** HELPERS UI ***/
 const qs = s => document.querySelector(s);
 const el = (t,a={},c=[])=>{const n=document.createElement(t);Object.entries(a).forEach(([k,v])=>(k in n)?n[k]=v:n.setAttribute(k,v));(Array.isArray(c)?c:[c]).filter(Boolean).forEach(x=>n.append(x.nodeType?x:document.createTextNode(x)));return n;}
+
 const ui = {
+  // Manejo de pestañas
   show(id){
     ["home","upload","mine","moderation","notif"].forEach(x => qs("#"+x).classList.toggle("hide", x!==id));
     if(id==="home") pages.search();
@@ -190,125 +187,97 @@ const ui = {
     if(id==="moderation") pages.queue();
     if(id==="notif") pages.notif();
   },
+  
+  // Render de estrellas
   stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); },
-  applyAuthState(user, isModerator){
-    qs("#whoami").textContent = user ? `Conectado: ${user.email||"usuario"}${isModerator?" · MOD":""}` : "Invitado";
+  
+  // Actualiza la UI según estado de autenticación
+  renderAuth(user, isModerator){
+    const label = user ? `Conectado: ${user.email} ${isModerator ? '· MOD' : ''}` : "Invitado";
+    qs("#whoami").textContent = label;
+    
+    // Si hay usuario, ocultamos el loginBox completo y mostramos botón Salir
     qs("#loginBox").classList.toggle("hide", !!user);
+    qs("#btn-logout").classList.toggle("hide", !user);
+    
+    // Pestaña Moderación solo si es admin
     qs("#nav-mod").classList.toggle("hide", !isModerator);
+    
+    // Si estamos en login y el usuario se conecta, enviarlo a home
+    if(user && !qs("#loginBox").classList.contains("hide")) ui.show("home");
   }
 };
 
-/*** AUTH ***/
-const REDIRECT_URL = window.location.origin + window.location.pathname;
-
-const auth = {
+/*** GESTIÓN DE ESTADO (AUTH) ***/
+const state = {
   user: null,
   isModerator: false,
 
-  async loadUser(){
-    // Asegura que el token incluya metadatos recientes
-    await supabase.auth.refreshSession().catch(()=>{});
+  async init(){
+    // 1. Obtener sesión inicial (Check de persistencia)
+    const { data: { session } } = await supabase.auth.getSession();
+    this.updateState(session);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    this.user = user || null;
-
-    // Toma is_moderator de app_metadata o user_metadata
-    let isMod = !!(user?.app_metadata?.is_moderator || user?.user_metadata?.is_moderator);
-
-    // Fallback por correo (UI)
-    if (!isMod && user?.email) {
-      const mail = user.email.toLowerCase();
-      if (ALLOW_MOD_EMAILS.includes(mail)) isMod = true;
-    }
-
-    this.isModerator = isMod;
-    ui.applyAuthState(this.user, this.isModerator);
-
-    // Debug útil (F12 → Console) para ver qué llega desde Supabase
-    console.debug("Auth user:", {
-      email: user?.email,
-      app_metadata: user?.app_metadata,
-      user_metadata: user?.user_metadata,
-      isModerator: this.isModerator
+    // 2. Escuchar cambios (Login, Logout, Token refresh)
+    supabase.auth.onAuthStateChange((_event, session) => {
+      this.updateState(session);
     });
-
-    return this.user;
   },
 
+  updateState(session){
+    this.user = session?.user || null;
+    // Verificamos el claim is_moderator en app_metadata
+    this.isModerator = !!(this.user?.app_metadata?.is_moderator);
+    
+    console.log("Auth State Updated:", { email: this.user?.email, isMod: this.isModerator });
+    ui.renderAuth(this.user, this.isModerator);
+  }
+};
+
+/*** LÓGICA DE AUTH (Acciones) ***/
+const REDIRECT_URL = window.location.origin + window.location.pathname;
+
+const authActions = {
   async signInPw(){
     const email = qs("#email").value.trim();
     const password = qs("#password").value.trim();
-    if(!email || !password) return alert("Correo y contraseña son obligatorios.");
+    if(!email || !password) return alert("Falta correo o contraseña.");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return alert(error.message);
-    await this.loadUser();
-    ui.show("home");
+    if(error) alert(error.message);
+    else ui.show("home");
   },
 
   async signUpPw(){
     const email = qs("#email").value.trim();
     const password = qs("#password").value.trim();
-    if(!email || !password) return alert("Correo y contraseña son obligatorios.");
+    if(!email || !password) return alert("Falta correo o contraseña.");
     const { error } = await supabase.auth.signUp({
       email, password,
       options: { emailRedirectTo: REDIRECT_URL }
     });
-    if (error) return alert(error.message);
-    alert("Cuenta creada. Ya puedes iniciar sesión con tu correo y contraseña.");
-  },
-
-  async resetPw(){
-    const email = qs("#email").value.trim();
-    if(!email) return alert("Escribe tu correo.");
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: REDIRECT_URL + "#reset"
-    });
-    if (error) return alert(error.message);
-    alert("Te envié un correo para restablecer tu contraseña.");
+    if(error) alert(error.message);
+    else alert("Revisa tu correo para confirmar la cuenta.");
   },
 
   async magicLink(){
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
     const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: REDIRECT_URL }
+      email, options: { emailRedirectTo: REDIRECT_URL }
     });
-    if (error) return alert(error.message);
-    alert("Te envié un enlace de acceso. Revisa tu correo y vuelve.");
-  },
-
-  async openModerator(){
-    // Refresca el estado justo antes por si el usuario acaba de loguearse
-    await this.loadUser();
-    if (!this.isModerator) { alert("No tienes permisos de moderador."); return; }
-    ui.show("moderation");
-    qs("#modWarn").textContent = "";
+    if(error) alert(error.message);
+    else alert("Enlace enviado a tu correo.");
   },
 
   async signOut(){
     await supabase.auth.signOut();
-    this.user = null; this.isModerator = false;
-    ui.applyAuthState(null, false);
     ui.show("home");
   }
 };
 
-// Cambios de sesión (incluye password recovery)
-supabase.auth.onAuthStateChange(async (event) => {
-  if (event === "PASSWORD_RECOVERY") {
-    const newPass = prompt("Escribe tu nueva contraseña:");
-    if (newPass) {
-      const { error } = await supabase.auth.updateUser({ password: newPass });
-      if (error) alert(error.message);
-      else alert("Contraseña actualizada. Vuelve a entrar con ella.");
-    }
-  }
-  await auth.loadUser();
-});
-
-/*** PÁGINAS ***/
+/*** PÁGINAS Y DATOS ***/
 const pages = {
+  // Búsqueda pública
   async search(){
     const q = qs("#f_q").value.trim();
     const cat = qs("#f_cat").value;
@@ -318,187 +287,341 @@ const pages = {
     const [col, dir] = order.split(".");
 
     let req = supabase.from("documents").select("*").eq("status","approved");
+    
     if(q) req = req.or(`title.ilike.%${q}%,author_name.ilike.%${q}%`);
     if(cat) req = req.eq("category", cat);
     if(ext) req = req.eq("ext", ext);
     if(tags.length) req = req.contains("tags", tags);
-    const from = qs("#f_from").value, to = qs("#f_to").value;
+    
+    // Fechas
+    const from = qs("#f_from").value;
+    const to = qs("#f_to").value;
     if(from) req = req.gte("created_at", from);
-    if(to) req = req.lte("created_at", to+" 23:59:59");
-    req = req.order(col, { ascending: dir==="asc" });
+    if(to) req = req.lte("created_at", to + " 23:59:59");
+
+    req = req.order(col, { ascending: dir === "asc" });
 
     const { data, error } = await req;
     const box = qs("#docsList"); box.innerHTML = "";
-    if(error){ box.textContent = "Error cargando documentos."; return; }
-    if(!data.length){ box.textContent = "No hay documentos."; return; }
-    data.forEach(d => box.append(render.docCard(d, {canRate: !!auth.user, canComment: true})));
+
+    if(error) { box.textContent = "Error al cargar."; return; }
+    if(!data?.length) { box.textContent = "No se encontraron documentos."; return; }
+
+    data.forEach(d => box.append(render.docCard(d, { public: true })));
   },
 
+  // Mis documentos
   async mine(){
-    if(!auth.user){ qs("#mineList").innerHTML = "Inicia sesión para ver tus subidas."; return; }
-    const { data, error } = await supabase.from("documents").select("*").eq("owner", auth.user.id).order("created_at",{ascending:false});
+    if(!state.user) return qs("#mineList").textContent = "Debes iniciar sesión.";
+    
+    const { data, error } = await supabase.from("documents")
+      .select("*")
+      .eq("owner", state.user.id)
+      .order("created_at", { ascending: false });
+
     const box = qs("#mineList"); box.innerHTML = "";
-    if(error){ box.textContent = "Error."; return; }
-    if(!data.length){ box.textContent = "Aún no has subido documentos."; return; }
-    data.forEach(d => box.append(render.docCard(d,{mine:true})));
+    if(error) return box.textContent = "Error al cargar tus documentos.";
+    if(!data?.length) return box.textContent = "No has subido nada aún.";
+
+    data.forEach(d => box.append(render.docCard(d, { mine: true })));
   },
 
+  // Cola de moderación
   async queue(){
     const box = qs("#queue"); box.innerHTML = "";
-    if(!auth.isModerator){ box.textContent = "No eres moderador (según Supabase)."; return; }
-    const { data, error } = await supabase.from("documents").select("*").eq("status","pending").order("created_at",{ascending:true});
-    if(error){ box.textContent = "Error cargando pendientes."; return; }
-    if(!data.length){ box.textContent = "No hay pendientes."; return; }
+    if(!state.isModerator) return box.textContent = "Acceso denegado.";
+
+    const { data, error } = await supabase.from("documents")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+
+    if(error) return box.textContent = "Error cargando cola.";
+    if(!data?.length) return box.textContent = "Todo limpio. No hay pendientes.";
+
     data.forEach(d => box.append(render.modCard(d)));
   },
 
+  // Notificaciones
   async notif(){
-    if(!auth.user){ qs("#notifList").innerHTML = "Inicia sesión para ver notificaciones."; return; }
-    const { data } = await supabase.from("notifications").select("*").eq("user_id", auth.user.id).order("created_at",{ascending:false});
+    if(!state.user) return qs("#notifList").textContent = "Inicia sesión.";
+    
+    const { data } = await supabase.from("notifications")
+      .select("*")
+      .eq("user_id", state.user.id)
+      .order("created_at", { ascending: false });
+
     const box = qs("#notifList"); box.innerHTML = "";
-    if(!data || !data.length){ box.textContent = "Sin notificaciones."; return; }
-    data.forEach(n => box.append(el("div",{className:"doc"},[
-      el("div",{},[el("div",{},`${n.type==='accepted'?'✅ Aceptado':'❌ Rechazado'}`), el("div",{className:"muted"}, n.message||"")]),
-      el("div",{className:"muted"}, new Date(n.created_at).toLocaleString())
-    ])));
+    if(!data?.length) return box.textContent = "Sin notificaciones.";
+
+    data.forEach(n => {
+      const row = el("div", {className:"doc"}, [
+        el("div", {}, [
+          el("div", {style:"font-weight:bold"}, n.type === 'accepted' ? "✅ Aprobado" : "❌ Rechazado"),
+          el("div", {className:"muted"}, n.message)
+        ]),
+        el("div", {className:"muted"}, new Date(n.created_at).toLocaleDateString())
+      ]);
+      box.append(row);
+    });
   }
 };
 
-/*** RENDER ***/
+/*** RENDERIZADO (Componentes) ***/
 const render = {
   docCard(d, opts={}){
     const row = el("div",{className:"doc"});
-    const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
-    const publicUrl = pub.publicUrl;
-    const fileName = d.storage_path.split("/").pop();
-
+    
+    // URL Pública (si está aprobado) o Privada (si es mío/pendiente)
+    // Para simplificar, usamos getPublicUrl, pero recuerda que 'pending' no será accesible públicamente 
+    // hasta que se mueva a 'public'.
+    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
+    
     const left = el("div",{},[
-      el("div",{}, d.title),
-      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.category||'Sin categoría'} · ${d.ext||''}`),
-      el("div",{className:"muted"}, `Subido: ${new Date(d.created_at).toLocaleDateString()} · ${d.tags?.join(", ")||''}`)
+      el("div",{style:"font-weight:700;font-size:1.1rem"}, d.title),
+      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} • ${d.category||'Gral'} • ${d.ext}`),
+      el("div",{className:"pill", style:"margin-top:0.4rem"}, d.tags?.join(", ") || "Sin etiquetas")
     ]);
-    const right = el("div",{className:"grid",style:"justify-items:end"},[
-      el("a",{href:publicUrl,download:fileName}, "Descargar"),
-      el("div",{className:"stars"}, ui.stars(d.avg_rating))
-    ]);
-    row.append(left,right);
 
-    if(opts.canRate){
-      right.querySelector(".stars").addEventListener("click", async (ev) => {
-        const idx = Array.from(ev.currentTarget.childNodes).indexOf(ev.target);
-        if(idx<0) return; const stars = idx+1;
-        await supabase.from("ratings").upsert({ doc_id: d.id, user_id: auth.user.id, stars });
-        pages.search();
-      });
+    const actions = el("div",{className:"grid", style:"justify-items:end; gap:0.5rem"});
+    
+    // Solo mostramos descargar si es público o es mío
+    if(d.status === 'approved' || opts.mine){
+      actions.append(el("a", {href: pub.publicUrl, target:"_blank", className:"pill"}, "⬇ Descargar"));
     }
-
-    // Comentarios
-    const comWrap = el("div",{className:"grid", style:"grid-column:1/-1"});
-    const list = el("div",{className:"grid"});
-    const form = el("div",{className:"flex"},[
-      el("input",{id:`nick-${d.id}`,placeholder:"Tu nombre"}),
-      el("input",{id:`cmt-${d.id}`,placeholder:"Escribe un comentario…",style:"flex:1"}),
-      el("button",{onclick: async()=>{
-        const body = qs(`#cmt-${d.id}`).value.trim(); const author = qs(`#nick-${d.id}`).value.trim() || (auth.user?.email || "Invitado");
-        if(!body) return;
-        await supabase.from("comments").insert({doc_id:d.id, user_id:auth.user?.id||null, author_name:author, body});
-        loadComments();
-      }}, "Comentar")
-    ]);
-    comWrap.append(list, form);
-    row.append(comWrap);
-    async function loadComments(){
-      const { data } = await supabase.from("comments").select("*").eq("doc_id", d.id).order("created_at",{ascending:false});
-      list.innerHTML = "";
-      (data||[]).forEach(c => list.append(el("div",{className:"doc"},[
-        el("div",{},[el("div",{},c.author_name), el("div",{className:"muted"}, c.body)]),
-        el("div",{className:"muted"}, new Date(c.created_at).toLocaleString())
-      ])));
+    
+    // Estrellas
+    const starsDiv = el("div", {className:"stars"}, ui.stars(d.avg_rating));
+    if(state.user && d.status === 'approved'){
+      starsDiv.onclick = async (e) => {
+        // Lógica simple de votación
+        const idx = Array.from(e.currentTarget.children).indexOf(e.target);
+        if(idx === -1) return;
+        await supabase.from("ratings").upsert({ doc_id: d.id, user_id: state.user.id, stars: idx + 1 });
+        pages.search(); // recargar para ver nuevo promedio
+      };
     }
-    loadComments();
+    actions.append(starsDiv);
 
+    row.append(left, actions);
+
+    // Si es "Mis subidas", mostrar estado
     if(opts.mine){
-      row.append(el("div",{className:"muted",style:"grid-column:1/-1"}, `Estado: ${d.status}${d.reject_reason? ' · Motivo: '+d.reject_reason : ''}`));
+      let stColor = d.status === 'approved' ? 'ok' : (d.status==='rejected'?'err':'muted');
+      let stText = d.status === 'approved' ? 'Aprobado' : (d.status==='rejected'?'Rechazado':'Pendiente');
+      const statusRow = el("div", {className:`${stColor}`, style:"grid-column:1/-1; font-size:0.9rem"}, 
+        `Estado: ${stText} ${d.reject_reason ? `(Motivo: ${d.reject_reason})` : ''}`
+      );
+      row.append(statusRow);
     }
+
+    // Comentarios (solo si es vista pública approved)
+    if(d.status === 'approved'){
+      const cmtSection = el("div", {className:"grid", style:"grid-column:1/-1; margin-top:1rem; border-top:1px dashed #333; padding-top:0.5rem"});
+      const cmtList = el("div", {className:"grid", style:"gap:0.5rem"});
+      
+      // Formulario comentario
+      const cmtForm = el("div",{className:"flex"},[
+        el("input",{id:`cmt-${d.id}`, placeholder:"Escribe un comentario...", style:"flex:1"}),
+        el("button",{
+          textContent:"Enviar",
+          onclick: async () => {
+            if(!state.user) return alert("Inicia sesión para comentar.");
+            const txt = qs(`#cmt-${d.id}`).value.trim();
+            if(!txt) return;
+            await supabase.from("comments").insert({
+              doc_id: d.id, 
+              user_id: state.user.id, 
+              author_name: state.user.email.split('@')[0], 
+              body: txt
+            });
+            loadComments();
+            qs(`#cmt-${d.id}`).value = "";
+          }
+        })
+      ]);
+
+      async function loadComments(){
+        cmtList.innerHTML = "";
+        const { data } = await supabase.from("comments").select("*").eq("doc_id", d.id).order("created_at",{ascending:false});
+        if(data) data.forEach(c => {
+          cmtList.append(el("div", {className:"muted", style:"font-size:0.85rem"}, [
+            el("strong", {}, c.author_name + ": "),
+            el("span", {}, c.body)
+          ]));
+        });
+      }
+      
+      cmtSection.append(cmtList, cmtForm);
+      row.append(cmtSection);
+      loadComments(); // Carga inicial
+    }
+
     return row;
   },
 
   modCard(d){
-    const row = el("div",{className:"doc"});
-    const left = el("div",{},[
-      el("div",{}, d.title),
-      el("div",{className:"muted"}, `${d.author_name||'Anónimo'} · ${d.email||''}`),
-      el("div",{className:"muted"}, `${d.category||''} · ${d.tags?.join(", ")||''}`)
+    const row = el("div", {className:"doc"});
+    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
+    
+    // Info
+    const info = el("div", {}, [
+      el("div", {style:"font-weight:bold"}, d.title),
+      el("div", {className:"muted"}, `Subido por: ${d.email || '?'}`),
+      el("div", {className:"muted"}, `Tags: ${d.tags?.join(", ")}`),
+      el("a", {href: pub.publicUrl, target:"_blank", style:"color:var(--accent)"}, "📂 Ver Archivo (Vista previa)")
     ]);
-    const { data:pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
-    const preview = el("a",{href:pub.publicUrl,target:"_blank"},"Ver archivo");
-    const acceptBtn = el("button",{onclick: async ()=>{
-      if(!auth.isModerator) return alert("No tienes permisos (RLS).");
-      const oldPath = d.storage_path;
-      const name = oldPath.split("/").pop();
-      const newPath = `public/${d.id}-${name.replace(/^pending\//,'')}`;
-      await supabase.storage.from(BUCKET).copy(oldPath, newPath);
-      await supabase.storage.from(BUCKET).remove([oldPath]);
-      await supabase.from("documents").update({ status: 'approved', storage_path: newPath, reject_reason: null }).eq("id", d.id);
-      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'accepted', message:`Tu documento "${d.title}" fue aprobado.` });
-      pages.queue(); pages.search();
-    }}, "Aceptar");
-    const reason = el("input",{placeholder:"Motivo de rechazo (obligatorio)"});
-    const rejectBtn = el("button",{onclick: async ()=>{
-      if(!auth.isModerator) return alert("No tienes permisos (RLS).");
-      const r = reason.value.trim(); if(!r) return alert("Escribe el motivo.");
-      await supabase.from("documents").update({ status:'rejected', reject_reason:r }).eq("id", d.id);
-      await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type:'rejected', message:r });
-      pages.queue();
-    }}, "Rechazar");
-    const right = el("div",{className:"grid",style:"justify-items:end"},[preview, acceptBtn, reason, rejectBtn]);
-    row.append(left,right);
+
+    // Acciones
+    const actions = el("div", {className:"grid"}, [
+      el("button", {
+        textContent: "✅ Aprobar",
+        onclick: async () => {
+          if(!confirm("¿Aprobar y publicar este documento?")) return;
+          
+          // 1. Mover archivo: pending -> public
+          const oldPath = d.storage_path; 
+          const fileName = oldPath.split("/").pop(); // timestamp-nombre.pdf
+          // Quitamos el timestamp para que quede limpio en public, o lo dejamos para unicidad. Dejémoslo con ID del doc.
+          const newPath = `public/${d.id}_${fileName.split('-').slice(1).join('-')}`; 
+
+          const { error: moveErr } = await supabase.storage.from(BUCKET).move(oldPath, newPath);
+          
+          if(moveErr){
+            console.error(moveErr);
+            return alert("Error moviendo archivo en Storage: " + moveErr.message);
+          }
+
+          // 2. Actualizar DB
+          await supabase.from("documents").update({
+            status: 'approved',
+            storage_path: newPath,
+            reject_reason: null
+          }).eq("id", d.id);
+
+          // 3. Notificar
+          await supabase.from("notifications").insert({
+            user_id: d.owner,
+            doc_id: d.id,
+            type: 'accepted',
+            message: `Tu documento "${d.title}" ha sido aprobado.`
+          });
+
+          pages.queue(); // Refrescar cola
+        }
+      }),
+      el("div", {className:"flex"}, [
+        el("input", {id:`reason-${d.id}`, placeholder:"Motivo rechazo"}),
+        el("button", {
+          textContent: "❌ Rechazar",
+          style: "background: var(--err); color:white;",
+          onclick: async () => {
+            const reason = qs(`#reason-${d.id}`).value.trim();
+            if(!reason) return alert("Debes indicar un motivo.");
+
+            await supabase.from("documents").update({
+              status: 'rejected',
+              reject_reason: reason
+            }).eq("id", d.id);
+
+            await supabase.from("notifications").insert({
+              user_id: d.owner,
+              doc_id: d.id,
+              type: 'rejected',
+              message: `Rechazado: ${reason}`
+            });
+
+            pages.queue();
+          }
+        })
+      ])
+    ]);
+
+    row.append(info, actions);
     return row;
   }
 };
 
-/*** SUBIDA ***/
+/*** SUBIDA DE ARCHIVOS ***/
 const upload = {
-  async doUpload(){
-    if(!auth.user) { alert("Inicia sesión con tu correo para subir."); return; }
+  async submit(){
+    if(!state.user) return alert("Debes iniciar sesión.");
+    
+    const fileInput = qs("#u_file");
+    const file = fileInput.files[0];
     const title = qs("#u_title").value.trim();
+    const cat = qs("#u_cat").value;
+    const tags = qs("#u_tags").value.split(",").map(t=>t.trim()).filter(Boolean);
     const author = qs("#u_author").value.trim();
     const email = qs("#u_email").value.trim();
-    const category = qs("#u_cat").value || "";
-    const tags = qs("#u_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
-    const file = qs("#u_file").files[0];
-    if(!title || !file){ return alert("Falta título o archivo."); }
-    if(file.size > 5 * 1024 * 1024){ return alert("El archivo excede 5 MB."); }
-    qs("#u_msg").textContent = "Subiendo…";
-    const ext = (file.name.split(".").pop()||"").toLowerCase();
-    const path = `pending/${auth.user.id}/${Date.now()}-${file.name}`;
-    const { error: e1 } = await supabase.storage.from(BUCKET).upload(path, file, { upsert:false });
-    if(e1){ qs("#u_msg").textContent="Error al subir."; return; }
-    await supabase.from("documents").insert({
-      owner: auth.user.id, title, author_name: author, email, category, tags,
-      ext, storage_path: path, size_bigint: file.size, status:'pending'
+
+    if(!file || !title) return alert("Falta archivo o título.");
+    if(file.size > 5 * 1024 * 1024) return alert("El archivo pesa más de 5MB.");
+
+    qs("#u_msg").textContent = "Subiendo archivo... espera...";
+
+    // Ruta: pending/user_id/timestamp-filename
+    const ext = file.name.split('.').pop();
+    const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    const path = `pending/${state.user.id}/${Date.now()}-${safeName}`;
+
+    // 1. Subir a Storage
+    const { error: uploadErr } = await supabase.storage.from(BUCKET).upload(path, file);
+    if(uploadErr){
+      qs("#u_msg").textContent = "Error subiendo archivo.";
+      return alert(uploadErr.message);
+    }
+
+    // 2. Crear registro en BD
+    const { error: dbErr } = await supabase.from("documents").insert({
+      owner: state.user.id,
+      title,
+      author_name: author,
+      email: email || state.user.email,
+      category: cat,
+      tags,
+      ext,
+      storage_path: path,
+      size_bigint: file.size,
+      status: 'pending'
     });
-    qs("#u_msg").textContent = "Listo. Quedó como pendiente. Te avisaremos al decidir.";
-    qs("#u_title").value = qs("#u_author").value = qs("#u_email").value = qs("#u_tags").value = "";
-    qs("#u_file").value = ""; pages.mine();
+
+    if(dbErr){
+      qs("#u_msg").textContent = "Error guardando datos.";
+      return alert(dbErr.message);
+    }
+
+    alert("¡Subido! Esperando moderación.");
+    qs("#u_msg").textContent = "";
+    // Limpiar form
+    qs("#u_title").value = "";
+    fileInput.value = "";
+    ui.show("mine");
   }
 };
 
-/*** LISTENERS & INIT ***/
-(function init(){
-  // Botones
-  qs("#btn-login").addEventListener("click", ()=>auth.signInPw());
-  qs("#btn-signup").addEventListener("click", ()=>auth.signUpPw());
-  qs("#btn-reset").addEventListener("click", ()=>auth.resetPw());
-  qs("#btn-magic").addEventListener("click", ()=>auth.magicLink());
-  qs("#btn-mod").addEventListener("click", ()=>auth.openModerator());
-  qs("#btn-logout").addEventListener("click", ()=>auth.signOut());
+/*** INICIALIZACIÓN ***/
+(function(){
+  // Listeners de Auth
+  qs("#btn-login").onclick = authActions.signInPw;
+  qs("#btn-signup").onclick = authActions.signUpPw;
+  qs("#btn-magic").onclick = authActions.magicLink;
+  qs("#btn-logout").onclick = authActions.signOut;
+  
+  // Listener de Upload
+  qs("#btn-upload").onclick = upload.submit;
 
-  // Subida
-  qs("#btn-upload").addEventListener("click", ()=>upload.doUpload());
+  // Botón Mod
+  qs("#btn-mod").onclick = () => {
+    if(state.isModerator) ui.show("moderation");
+    else alert("No tienes permisos.");
+  };
 
-  // Arranque
-  auth.loadUser().then(()=>{ ui.show("home"); pages.search(); });
+  // Arrancar
+  state.init().then(() => {
+    // Si no hay sesión, mostramos home, si hay sesión state.init maneja la UI
+    pages.search(); 
+  });
 })();
 </script>
 </body>
