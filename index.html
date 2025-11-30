@@ -4,12 +4,13 @@
   <meta charset="utf-8" />
   <title>Apuntes Escolares</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{--bg:#0f172a;--card:#111827;--muted:#9ca3af;--text:#e5e7eb;--accent:#22d3ee;--accent2:#38bdf8;--err:#f43f5e;--ok:#22c55e}
     *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1023,#0f172a);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    header,footer{border-color:rgba(255,255,255,.08)} header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid}
+    header,footer{border-color:rgba(255,255,255,.08)} header{position:sticky;top:0;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);border-bottom:1px solid; z-index: 10;}
     .wrap{max-width:1100px;margin:0 auto;padding:1rem}
     .brand{font-weight:800}
     nav a{color:var(--text);opacity:.9;text-decoration:none;margin-right:1rem}
@@ -68,8 +69,7 @@
       </div>
     </div>
     <div class="flex muted" style="margin-top:.5rem">
-      <span class="pill">También puedes navegar como invitado (ver documentos y comentarios).</span>
-      <span class="right" id="whoami">Invitado</span>
+      <span class="pill">Los invitados pueden buscar y ver documentos, pero no subir ni comentar.</span>
     </div>
   </section>
 
@@ -150,7 +150,7 @@
   <div class="wrap flex">
     <span class="muted">© 2025 Apuntes Escolares</span>
     <div class="right flex">
-      <button id="btn-logout">Salir</button>
+      <button id="btn-logout" class="hide">Salir</button>
     </div>
   </div>
 </footer>
@@ -158,8 +158,7 @@
 <script>
 /**
  * ==========================================
- * CONFIGURACIÓN DE SUPABASE
- * Reemplaza los placeholders con tus datos reales
+ * CONFIGURACIÓN DE SUPABASE (Tus credenciales reales)
  * ==========================================
  */
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
@@ -181,7 +180,14 @@ const el = (t,a={},c=[])=>{const n=document.createElement(t);Object.entries(a).f
 const ui = {
   // Manejo de pestañas
   show(id){
-    ["home","upload","mine","moderation","notif"].forEach(x => qs("#"+x).classList.toggle("hide", x!==id));
+    // Ocultar todas las secciones primero
+    ["home","upload","mine","moderation","notif"].forEach(x => qs("#"+x).classList.add("hide"));
+    
+    // Mostrar la sección solicitada
+    const target = qs("#"+id);
+    if(target) target.classList.remove("hide");
+
+    // Cargar datos si corresponde
     if(id==="home") pages.search();
     if(id==="mine") pages.mine();
     if(id==="moderation") pages.queue();
@@ -191,20 +197,43 @@ const ui = {
   // Render de estrellas
   stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); },
   
-  // Actualiza la UI según estado de autenticación
+  // === LÓGICA DE ESTADO: Qué ve quién ===
   renderAuth(user, isModerator){
-    const label = user ? `Conectado: ${user.email} ${isModerator ? '· MOD' : ''}` : "Invitado";
-    qs("#whoami").textContent = label;
-    
-    // Si hay usuario, ocultamos el loginBox completo y mostramos botón Salir
+    // 1. LOGIN BOX: Se oculta si hay usuario, se muestra si es invitado
     qs("#loginBox").classList.toggle("hide", !!user);
+    
+    // 2. BOTÓN SALIR: Solo visible si hay usuario
     qs("#btn-logout").classList.toggle("hide", !user);
+
+    // 3. MENÚ DE NAVEGACIÓN (Control fino de enlaces)
+    // "Inicio" siempre visible (público)
     
-    // Pestaña Moderación solo si es admin
+    // "Subir" y "Mis subidas" -> SOLO visibles si hay usuario conectado
+    const navUpload = qs("nav a[href='#upload']");
+    const navMine = qs("nav a[href='#mine']");
+    if(navUpload) navUpload.classList.toggle("hide", !user);
+    if(navMine) navMine.classList.toggle("hide", !user);
+    
+    // "Moderación" -> SOLO si es moderador
     qs("#nav-mod").classList.toggle("hide", !isModerator);
-    
-    // Si estamos en login y el usuario se conecta, enviarlo a home
-    if(user && !qs("#loginBox").classList.contains("hide")) ui.show("home");
+
+    // 4. ETIQUETA DE IDENTIDAD (Barra superior)
+    let label = qs("#user-identity");
+    if(!label){
+      label = document.createElement("span");
+      label.id = "user-identity";
+      label.style.cssText = "font-size:0.8rem; margin-right:1rem; opacity:0.8; font-weight:bold;";
+      const nav = qs("nav");
+      nav.insertBefore(label, nav.firstChild);
+    }
+
+    if (user) {
+      label.textContent = `${user.email} ${isModerator ? '🛡️ MOD' : ''}`;
+      label.style.color = "var(--accent)"; // Color cyan para resaltar
+    } else {
+      label.textContent = "Viendo como: Invitado (Solo lectura)";
+      label.style.color = "var(--muted)"; // Color gris
+    }
   }
 };
 
@@ -214,11 +243,11 @@ const state = {
   isModerator: false,
 
   async init(){
-    // 1. Obtener sesión inicial (Check de persistencia)
+    // 1. Obtener sesión inicial
     const { data: { session } } = await supabase.auth.getSession();
     this.updateState(session);
 
-    // 2. Escuchar cambios (Login, Logout, Token refresh)
+    // 2. Escuchar cambios
     supabase.auth.onAuthStateChange((_event, session) => {
       this.updateState(session);
     });
@@ -226,11 +255,12 @@ const state = {
 
   updateState(session){
     this.user = session?.user || null;
-    // Verificamos el claim is_moderator en app_metadata
     this.isModerator = !!(this.user?.app_metadata?.is_moderator);
-    
-    console.log("Auth State Updated:", { email: this.user?.email, isMod: this.isModerator });
+    console.log("Auth:", { email: this.user?.email, isMod: this.isModerator });
     ui.renderAuth(this.user, this.isModerator);
+    
+    // Si es arranque y estamos logueados, ocultamos login y mostramos home (opcional)
+    // Si no estamos logueados, el ui.renderAuth ya dejó visible el login y el home (si así se desea)
   }
 };
 
@@ -271,7 +301,8 @@ const authActions = {
 
   async signOut(){
     await supabase.auth.signOut();
-    ui.show("home");
+    ui.show("home"); // Volver a home al salir
+    alert("Has cerrado sesión.");
   }
 };
 
@@ -293,7 +324,6 @@ const pages = {
     if(ext) req = req.eq("ext", ext);
     if(tags.length) req = req.contains("tags", tags);
     
-    // Fechas
     const from = qs("#f_from").value;
     const to = qs("#f_to").value;
     if(from) req = req.gte("created_at", from);
@@ -310,7 +340,7 @@ const pages = {
     data.forEach(d => box.append(render.docCard(d, { public: true })));
   },
 
-  // Mis documentos
+  // Mis documentos (Solo user)
   async mine(){
     if(!state.user) return qs("#mineList").textContent = "Debes iniciar sesión.";
     
@@ -326,7 +356,7 @@ const pages = {
     data.forEach(d => box.append(render.docCard(d, { mine: true })));
   },
 
-  // Cola de moderación
+  // Cola de moderación (Solo mod)
   async queue(){
     const box = qs("#queue"); box.innerHTML = "";
     if(!state.isModerator) return box.textContent = "Acceso denegado.";
@@ -372,9 +402,7 @@ const render = {
   docCard(d, opts={}){
     const row = el("div",{className:"doc"});
     
-    // URL Pública (si está aprobado) o Privada (si es mío/pendiente)
-    // Para simplificar, usamos getPublicUrl, pero recuerda que 'pending' no será accesible públicamente 
-    // hasta que se mueva a 'public'.
+    // Obtener URL pública
     const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
     
     const left = el("div",{},[
@@ -385,27 +413,31 @@ const render = {
 
     const actions = el("div",{className:"grid", style:"justify-items:end; gap:0.5rem"});
     
-    // Solo mostramos descargar si es público o es mío
+    // Botón Descargar: Visible para todos si está aprobado. Si es mío, visible siempre.
     if(d.status === 'approved' || opts.mine){
       actions.append(el("a", {href: pub.publicUrl, target:"_blank", className:"pill"}, "⬇ Descargar"));
     }
     
     // Estrellas
     const starsDiv = el("div", {className:"stars"}, ui.stars(d.avg_rating));
+    // Solo permitir votar si estoy logueado y es un doc público
     if(state.user && d.status === 'approved'){
+      starsDiv.title = "Haz clic para calificar";
       starsDiv.onclick = async (e) => {
-        // Lógica simple de votación
         const idx = Array.from(e.currentTarget.children).indexOf(e.target);
         if(idx === -1) return;
         await supabase.from("ratings").upsert({ doc_id: d.id, user_id: state.user.id, stars: idx + 1 });
-        pages.search(); // recargar para ver nuevo promedio
+        pages.search(); // recargar
       };
+    } else if (!state.user) {
+      starsDiv.title = "Inicia sesión para calificar";
+      starsDiv.style.cursor = "default";
     }
     actions.append(starsDiv);
 
     row.append(left, actions);
 
-    // Si es "Mis subidas", mostrar estado
+    // Estado para "Mis subidas"
     if(opts.mine){
       let stColor = d.status === 'approved' ? 'ok' : (d.status==='rejected'?'err':'muted');
       let stText = d.status === 'approved' ? 'Aprobado' : (d.status==='rejected'?'Rechazado':'Pendiente');
@@ -415,18 +447,19 @@ const render = {
       row.append(statusRow);
     }
 
-    // Comentarios (solo si es vista pública approved)
+    // Comentarios (Visible para todos, pero solo comenta quien tiene sesión)
     if(d.status === 'approved'){
       const cmtSection = el("div", {className:"grid", style:"grid-column:1/-1; margin-top:1rem; border-top:1px dashed #333; padding-top:0.5rem"});
       const cmtList = el("div", {className:"grid", style:"gap:0.5rem"});
       
-      // Formulario comentario
       const cmtForm = el("div",{className:"flex"},[
-        el("input",{id:`cmt-${d.id}`, placeholder:"Escribe un comentario...", style:"flex:1"}),
+        el("input",{id:`cmt-${d.id}`, placeholder: state.user ? "Escribe un comentario..." : "Inicia sesión para comentar", disabled: !state.user, style:"flex:1"}),
         el("button",{
           textContent:"Enviar",
+          disabled: !state.user,
+          style: !state.user ? "opacity:0.5; cursor:not-allowed" : "",
           onclick: async () => {
-            if(!state.user) return alert("Inicia sesión para comentar.");
+            if(!state.user) return;
             const txt = qs(`#cmt-${d.id}`).value.trim();
             if(!txt) return;
             await supabase.from("comments").insert({
@@ -454,7 +487,7 @@ const render = {
       
       cmtSection.append(cmtList, cmtForm);
       row.append(cmtSection);
-      loadComments(); // Carga inicial
+      loadComments();
     }
 
     return row;
@@ -469,7 +502,7 @@ const render = {
       el("div", {style:"font-weight:bold"}, d.title),
       el("div", {className:"muted"}, `Subido por: ${d.email || '?'}`),
       el("div", {className:"muted"}, `Tags: ${d.tags?.join(", ")}`),
-      el("a", {href: pub.publicUrl, target:"_blank", style:"color:var(--accent)"}, "📂 Ver Archivo (Vista previa)")
+      el("a", {href: pub.publicUrl, target:"_blank", style:"color:var(--accent)"}, "📂 Revisar Archivo")
     ]);
 
     // Acciones
@@ -481,9 +514,8 @@ const render = {
           
           // 1. Mover archivo: pending -> public
           const oldPath = d.storage_path; 
-          const fileName = oldPath.split("/").pop(); // timestamp-nombre.pdf
-          // Quitamos el timestamp para que quede limpio en public, o lo dejamos para unicidad. Dejémoslo con ID del doc.
-          const newPath = `public/${d.id}_${fileName.split('-').slice(1).join('-')}`; 
+          const fileName = oldPath.split("/").pop(); 
+          const newPath = `public/${d.id}_${fileName}`; 
 
           const { error: moveErr } = await supabase.storage.from(BUCKET).move(oldPath, newPath);
           
@@ -507,7 +539,7 @@ const render = {
             message: `Tu documento "${d.title}" ha sido aprobado.`
           });
 
-          pages.queue(); // Refrescar cola
+          pages.queue(); 
         }
       }),
       el("div", {className:"flex"}, [
@@ -561,9 +593,9 @@ const upload = {
     qs("#u_msg").textContent = "Subiendo archivo... espera...";
 
     // Ruta: pending/user_id/timestamp-filename
-    const ext = file.name.split('.').pop();
     const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
     const path = `pending/${state.user.id}/${Date.now()}-${safeName}`;
+    const ext = file.name.split('.').pop();
 
     // 1. Subir a Storage
     const { error: uploadErr } = await supabase.storage.from(BUCKET).upload(path, file);
@@ -593,7 +625,6 @@ const upload = {
 
     alert("¡Subido! Esperando moderación.");
     qs("#u_msg").textContent = "";
-    // Limpiar form
     qs("#u_title").value = "";
     fileInput.value = "";
     ui.show("mine");
@@ -619,7 +650,7 @@ const upload = {
 
   // Arrancar
   state.init().then(() => {
-    // Si no hay sesión, mostramos home, si hay sesión state.init maneja la UI
+    // Carga inicial: siempre mostrar home (search)
     pages.search(); 
   });
 })();
