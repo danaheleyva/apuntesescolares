@@ -16,8 +16,7 @@
       --unam-gold-light: #F2C75C; /* Dorado brillo */
       --white: #ffffff;
       --gray-light: #f3f4f6;
-      --text-dark: #111827;       /* Texto oscuro para tarjetas */
-      --text-light: #f9fafb;      /* Texto claro para fondo azul */
+      --text-dark: #111827;       
       --err: #ef4444;
       --ok: #16a34a;
     }
@@ -37,16 +36,15 @@
     header {
       position: sticky;
       top: 0;
-      background: rgba(0, 28, 77, 0.95); /* Azul oscuro semitransparente */
+      background: rgba(0, 28, 77, 0.95);
       backdrop-filter: blur(8px);
-      border-bottom: 3px solid var(--unam-gold); /* Borde dorado inferior */
+      border-bottom: 3px solid var(--unam-gold);
       z-index: 10;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
       color: var(--white);
     }
     
     .wrap { max-width: 1100px; margin: 0 auto; padding: 1rem; }
-    
     .flex { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
     .right { margin-left: auto; }
     .grid { display: grid; gap: 1rem; }
@@ -54,112 +52,54 @@
     .brand { font-weight: 900; font-size: 1.2rem; letter-spacing: 0.5px; color: var(--unam-gold); }
     
     nav a { 
-      color: var(--white); 
-      opacity: 0.9; 
-      text-decoration: none; 
-      margin-right: 1rem; 
-      font-weight: 500; 
-      transition: color 0.2s;
+      color: var(--white); opacity: 0.9; text-decoration: none; margin-right: 1rem; font-weight: 500; transition: color 0.2s;
     }
     nav a:hover { color: var(--unam-gold); opacity: 1; }
 
-    /* === TARJETAS (Ahora Blancas) === */
+    /* === TARJETAS === */
     .card {
       background: var(--white);
       border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Sombra elegante */
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       border: 1px solid rgba(255,255,255,0.1);
       margin-top: 1rem;
     }
 
-    /* Títulos dentro de tarjetas */
     h1, h2, h3 { margin-top: 0; color: var(--unam-blue); }
 
     /* === INPUTS Y BOTONES === */
     input, select, textarea {
-      width: 100%;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      background: #fff;
-      color: var(--text-dark);
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      transition: border-color 0.2s;
+      width: 100%; border-radius: 8px; border: 1px solid #d1d5db; background: #fff;
+      color: var(--text-dark); padding: 0.75rem 1rem; font-size: 1rem;
     }
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--unam-blue);
-      box-shadow: 0 0 0 3px rgba(0, 43, 122, 0.1);
-    }
+    input:focus, select:focus { outline: none; border-color: var(--unam-blue); box-shadow: 0 0 0 3px rgba(0, 43, 122, 0.1); }
 
     button {
       background: linear-gradient(90deg, var(--unam-gold), var(--unam-gold-light));
-      color: var(--unam-dark);
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem 1.2rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
-      text-transform: uppercase;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
+      color: var(--unam-dark); border: none; border-radius: 8px; padding: 0.75rem 1.2rem;
+      font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.9rem;
     }
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(213, 159, 15, 0.4);
-    }
-    button:active { transform: translateY(0); }
+    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(213, 159, 15, 0.4); }
     
-    /* Botones secundarios o peligrosos */
     button.ghost { background: transparent; border: 1px solid var(--unam-blue); color: var(--unam-blue); }
-    button.danger { background: var(--err); color: white; }
-
-    /* === UTILIDADES === */
-    .pill {
-      display: inline-block;
-      background: var(--gray-light);
-      border-radius: 999px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.8rem;
-      color: var(--unam-dark);
-      font-weight: 600;
-    }
     
+    /* === UTILIDADES === */
+    .pill { display: inline-block; background: var(--gray-light); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.8rem; color: var(--unam-dark); font-weight: 600; }
     .stars { font-size: 1.2rem; cursor: pointer; user-select: none; }
     .star-on { color: var(--unam-gold); }
     .star-off { color: #d1d5db; }
-
-    .doc {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 0.8rem;
-      align-items: center;
-      border-top: 1px solid #e5e7eb;
-      padding: 1rem 0;
-    }
-    
+    .doc { display: grid; grid-template-columns: 1fr auto; gap: 0.8rem; align-items: center; border-top: 1px solid #e5e7eb; padding: 1rem 0; }
     .muted { color: #6b7280; font-size: 0.9rem; }
-    .err { color: var(--err); } 
-    .ok { color: var(--ok); } 
+    .err { color: var(--err); } .ok { color: var(--ok); } 
     .hide { display: none !important; }
     
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
     @media(max-width: 800px) { .two { grid-template-columns: 1fr; } }
 
-    /* Ajuste específico para el Login Centrado */
-    #loginBox {
-      max-width: 500px;
-      margin: 2rem auto; /* Centrado horizontal */
-      text-align: center;
-      border-top: 5px solid var(--unam-gold);
-    }
-    #loginBox h2 { font-size: 1.8rem; margin-bottom: 1.5rem; }
-    #loginBox input { margin-bottom: 1rem; }
-    #loginBox .flex { justify-content: center; gap: 1rem; margin-top: 1rem; }
+    /* Login Centrado */
+    #loginBox { max-width: 500px; margin: 2rem auto; text-align: center; border-top: 5px solid var(--unam-gold); }
     #loginBox button { width: 100%; margin-top: 0.5rem; }
-    
   </style>
 </head>
 
@@ -179,7 +119,7 @@
 <main class="wrap grid">
   <section class="card" id="loginBox">
     <h2>Iniciar Sesión</h2>
-    <p class="muted" style="margin-bottom: 1.5rem;">Accede con tu cuenta institucional o personal</p>
+    <p class="muted" style="margin-bottom: 1.5rem;">Accede para subir y comentar documentos</p>
     
     <div class="grid">
       <input id="email" type="email" placeholder="Correo electrónico" />
@@ -193,15 +133,16 @@
         <small class="muted" style="cursor:pointer; text-decoration:underline;" onclick="authActions.resetPw()">Olvidé mi contraseña</small>
       </div>
     </div>
+    <div class="flex muted" style="margin-top:1.5rem; justify-content:center;">
+      <span class="pill">Los invitados pueden buscar y ver documentos.</span>
+    </div>
   </section>
 
   <section class="card" id="home">
-    <div class="flex">
-      <h2 style="flex:1">Documentos aprobados</h2>
-    </div>
+    <h2>Documentos aprobados</h2>
     <div class="two">
       <div class="grid">
-        <input id="f_q" placeholder="🔍 Buscar por título, autor o tema..." oninput="pages.search()" />
+        <input id="f_q" placeholder="Buscar por título o autor…" oninput="pages.search()" />
         <div class="flex">
           <select id="f_cat" onchange="pages.search()">
             <option value="">Todas las carreras</option>
@@ -210,7 +151,7 @@
             <option>Ingeniería Industrial</option><option>Ingeniería Mecatrónica</option><option>Ingeniería en Sistemas Biomédicos</option>
           </select>
           <select id="f_ext" onchange="pages.search()">
-            <option value="">Formato</option><option>pdf</option><option>docx</option><option>pptx</option><option>png</option><option>jpg</option>
+            <option value="">Extensión</option><option>pdf</option><option>docx</option><option>pptx</option><option>png</option><option>jpg</option>
           </select>
           <select id="f_order" onchange="pages.search()">
             <option value="created_at.desc">Más recientes</option>
@@ -220,50 +161,46 @@
         </div>
       </div>
       <div class="grid">
-        <input id="f_tags" placeholder="Etiquetas (ej. Cálculo, Física...)" oninput="pages.search()" />
-        <div class="flex" style="justify-content: flex-end;">
+        <input id="f_tags" placeholder="Etiquetas (coma , )" oninput="pages.search()" />
+        <div class="flex">
           <label class="muted">Desde</label><input type="date" id="f_from" onchange="pages.search()" style="width:auto" />
           <label class="muted">Hasta</label><input type="date" id="f_to" onchange="pages.search()" style="width:auto" />
         </div>
       </div>
     </div>
-    <div id="docsList" class="grid" style="margin-top:1.5rem"></div>
+    <div id="docsList" class="grid" style="margin-top:.8rem"></div>
   </section>
 
   <section class="card hide" id="upload">
     <h2>Subir documento</h2>
-    <p class="muted">Comparte tu conocimiento. El archivo pasará a revisión antes de publicarse.</p>
-    <div class="grid" style="margin-top:1rem">
-      <input id="u_title" placeholder="Título del documento" />
-      <input id="u_author" placeholder="Nombre del autor" />
-      <input id="u_email" placeholder="Correo de contacto (opcional)" />
+    <div class="grid">
+      <input id="u_title" placeholder="Título" />
+      <input id="u_author" placeholder="Tu nombre (autor)" />
+      <input id="u_email" placeholder="Tu correo (para notificaciones)" />
       <div class="two">
         <select id="u_cat">
-          <option value="">Selecciona la carrera</option>
+          <option value="">Selecciona tu carrera</option>
           <option>Ingeniería Civil</option><option>Ingeniería Geomática</option><option>Ingeniería Eléctrica Electrónica</option>
           <option>Ingeniería en Computación</option><option>Ingeniería en Telecomunicaciones</option><option>Ingeniería Mecánica</option>
           <option>Ingeniería Industrial</option><option>Ingeniería Mecatrónica</option><option>Ingeniería en Sistemas Biomédicos</option>
         </select>
-        <input id="u_tags" placeholder="Etiquetas (separadas por coma)" />
+        <input id="u_tags" placeholder="Etiquetas (ej. Cálculo, Integrales)" />
       </div>
-      <div style="border: 2px dashed #d1d5db; padding: 2rem; text-align: center; border-radius: 8px;">
-        <p class="muted">Selecciona tu archivo (PDF, Word, PPT, Imagen - Máx 5MB)</p>
-        <input id="u_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" style="border:none; background:transparent;" />
-      </div>
+      <input id="u_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg" />
       <div class="flex">
-        <button id="btn-upload">Subir Archivo</button>
-        <span id="u_msg" class="muted" style="font-weight:bold; color:var(--unam-blue)"></span>
+        <button id="btn-upload">Enviar a revisión</button>
+        <span id="u_msg" class="muted" style="color:var(--unam-blue); font-weight:bold;"></span>
       </div>
     </div>
   </section>
 
   <section class="card hide" id="mine">
-    <h2>Mis aportaciones</h2>
+    <h2>Mis subidas</h2>
     <div id="mineList" class="grid"></div>
   </section>
 
   <section class="card hide" id="moderation" style="border-top: 5px solid var(--err);">
-    <h2>Panel de Moderación</h2>
+    <h2>Moderación – Pendientes</h2>
     <div id="modWarn" class="err"></div>
     <div id="queue" class="grid"></div>
   </section>
@@ -276,9 +213,9 @@
 
 <footer>
   <div class="wrap flex">
-    <span style="color: rgba(255,255,255,0.7);">© 2025 Apuntes Escolares · Hecho con orgullo UNAM 💙💛</span>
+    <span style="color:rgba(255,255,255,0.7)">© 2025 Apuntes Escolares · UNAM 💙💛</span>
     <div class="right flex">
-      <button id="btn-logout" class="hide" style="background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white;">Cerrar Sesión</button>
+      <button id="btn-logout" class="hide" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.3); color:white;">Salir</button>
     </div>
   </div>
 </footer>
@@ -286,7 +223,7 @@
 <script>
 /**
  * ==========================================
- * CONFIGURACIÓN DE SUPABASE (Tus credenciales reales)
+ * CONFIGURACIÓN DE SUPABASE
  * ==========================================
  */
 const SUPABASE_URL = "https://msoeeamotfajcpodnxif.supabase.co";
@@ -315,41 +252,46 @@ const ui = {
   
   stars(avg){ const n=Math.round(avg||0); return "★★★★★".split("").map((s,i)=> el("span",{className: i<n?"star-on":"star-off"}, s)); },
   
+  // === LÓGICA DE ESTADO (TU VERSIÓN CORRECTA) ===
   renderAuth(user, isModerator){
-    // LOGIN BOX
+    // 1. LOGIN BOX: Ocultar si hay usuario, mostrar si no
     qs("#loginBox").classList.toggle("hide", !!user);
-    // LOGOUT BUTTON
+    
+    // 2. BOTÓN SALIR: Solo si hay usuario
     qs("#btn-logout").classList.toggle("hide", !user);
 
-    // MENU LINKS
+    // 3. MENÚ: Ocultar enlaces de escritura a invitados
     const navUpload = qs("nav a[href='#upload']");
     const navMine = qs("nav a[href='#mine']");
     if(navUpload) navUpload.classList.toggle("hide", !user);
     if(navMine) navMine.classList.toggle("hide", !user);
+    
+    // Moderación solo mods
     qs("#nav-mod").classList.toggle("hide", !isModerator);
 
-    // USER LABEL
+    // 4. IDENTIDAD EN BARRA SUPERIOR
     let label = qs("#user-identity");
     if(!label){
       label = document.createElement("span");
       label.id = "user-identity";
-      label.style.cssText = "font-size:0.9rem; margin-right:1rem; color:white; font-weight:500;";
+      label.style.cssText = "font-size:0.9rem; margin-right:1rem; color:white; opacity:0.9;";
       const nav = qs("nav");
       nav.insertBefore(label, nav.firstChild);
     }
 
     if (user) {
-      label.innerHTML = `${user.email} ${isModerator ? '<span style="background:var(--unam-gold); color:black; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; vertical-align:middle;">MOD</span>' : ''}`;
+      label.innerHTML = `${user.email} ${isModerator ? '<span style="background:var(--unam-gold); color:black; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold;">MOD</span>' : ''}`;
     } else {
-      label.innerHTML = `<span style="opacity:0.8">Invitado</span>`;
+      label.innerHTML = `<span style="opacity:0.7">Invitado (Solo lectura)</span>`;
     }
   }
 };
 
-/*** GESTIÓN DE ESTADO (AUTH) ***/
+/*** GESTIÓN DE ESTADO ***/
 const state = {
   user: null,
   isModerator: false,
+
   async init(){
     const { data: { session } } = await supabase.auth.getSession();
     this.updateState(session);
@@ -357,15 +299,18 @@ const state = {
       this.updateState(session);
     });
   },
+
   updateState(session){
     this.user = session?.user || null;
     this.isModerator = !!(this.user?.app_metadata?.is_moderator);
+    console.log("Auth:", { email: this.user?.email, isMod: this.isModerator });
     ui.renderAuth(this.user, this.isModerator);
   }
 };
 
-/*** AUTH ACTIONS ***/
+/*** ACCIONES AUTH ***/
 const REDIRECT_URL = window.location.origin + window.location.pathname;
+
 const authActions = {
   async signInPw(){
     const email = qs("#email").value.trim();
@@ -375,6 +320,7 @@ const authActions = {
     if(error) alert(error.message);
     else ui.show("home");
   },
+
   async signUpPw(){
     const email = qs("#email").value.trim();
     const password = qs("#password").value.trim();
@@ -383,8 +329,9 @@ const authActions = {
       email, password, options: { emailRedirectTo: REDIRECT_URL }
     });
     if(error) alert(error.message);
-    else alert("Revisa tu correo para confirmar la cuenta.");
+    else alert("Cuenta creada. Intenta iniciar sesión (o revisa tu correo si está activada la confirmación).");
   },
+
   async magicLink(){
     const email = qs("#email").value.trim();
     if(!email) return alert("Escribe tu correo.");
@@ -394,20 +341,23 @@ const authActions = {
     if(error) alert(error.message);
     else alert("Enlace enviado a tu correo.");
   },
+
   async resetPw(){
     const email = qs("#email").value.trim();
-    if(!email) return alert("Ingresa tu correo primero.");
+    if(!email) return alert("Ingresa tu correo arriba.");
     const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: REDIRECT_URL });
     if(error) alert(error.message);
     else alert("Correo de recuperación enviado.");
   },
+
   async signOut(){
     await supabase.auth.signOut();
     ui.show("home");
+    alert("Has cerrado sesión.");
   }
 };
 
-/*** PAGES ***/
+/*** PÁGINAS ***/
 const pages = {
   async search(){
     const q = qs("#f_q").value.trim();
@@ -432,39 +382,39 @@ const pages = {
     const { data, error } = await req;
     const box = qs("#docsList"); box.innerHTML = "";
     if(error) { box.textContent = "Error al cargar."; return; }
-    if(!data?.length) { box.innerHTML = '<div style="text-align:center; padding:2rem; color:#6b7280; grid-column:1/-1;">No se encontraron documentos.</div>'; return; }
+    if(!data?.length) { box.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#6b7280;">No se encontraron documentos.</div>'; return; }
 
     data.forEach(d => box.append(render.docCard(d, { public: true })));
   },
 
   async mine(){
-    if(!state.user) return;
-    const { data } = await supabase.from("documents").select("*").eq("owner", state.user.id).order("created_at", { ascending: false });
+    if(!state.user) return qs("#mineList").textContent = "Debes iniciar sesión.";
+    const { data } = await supabase.from("documents").select("*").eq("owner", state.user.id).order("created_at",{ascending:false});
     const box = qs("#mineList"); box.innerHTML = "";
-    if(!data?.length) return box.innerHTML = '<div class="muted">Aún no has subido documentos.</div>';
-    data.forEach(d => box.append(render.docCard(d, { mine: true })));
+    if(!data?.length) return box.textContent = "No has subido documentos.";
+    data.forEach(d => box.append(render.docCard(d,{mine:true})));
   },
 
   async queue(){
     const box = qs("#queue"); box.innerHTML = "";
-    if(!state.isModerator) return;
-    const { data } = await supabase.from("documents").select("*").eq("status", "pending").order("created_at", { ascending: true });
-    if(!data?.length) return box.innerHTML = '<div class="muted">No hay documentos pendientes de revisión.</div>';
+    if(!state.isModerator) return box.textContent = "Acceso denegado.";
+    const { data } = await supabase.from("documents").select("*").eq("status","pending").order("created_at",{ascending:true});
+    if(!data?.length) return box.textContent = "No hay pendientes.";
     data.forEach(d => box.append(render.modCard(d)));
   },
 
   async notif(){
-    if(!state.user) return;
-    const { data } = await supabase.from("notifications").select("*").eq("user_id", state.user.id).order("created_at", { ascending: false });
+    if(!state.user) return qs("#notifList").textContent = "Inicia sesión.";
+    const { data } = await supabase.from("notifications").select("*").eq("user_id", state.user.id).order("created_at",{ascending:false});
     const box = qs("#notifList"); box.innerHTML = "";
-    if(!data?.length) return box.innerHTML = '<div class="muted">Sin notificaciones.</div>';
+    if(!data?.length) return box.textContent = "Sin notificaciones.";
     data.forEach(n => {
       const row = el("div", {className:"doc"}, [
         el("div", {}, [
-          el("div", {style:"font-weight:bold; color:var(--text-dark)"}, n.type === 'accepted' ? "✅ Aprobado" : "❌ Rechazado"),
+          el("div", {style:"font-weight:bold"}, n.type === 'accepted' ? "✅ Aprobado" : "❌ Rechazado"),
           el("div", {className:"muted"}, n.message)
         ]),
-        el("div", {className:"muted", style:"font-size:0.8rem"}, new Date(n.created_at).toLocaleDateString())
+        el("div", {className:"muted"}, new Date(n.created_at).toLocaleDateString())
       ]);
       box.append(row);
     });
@@ -478,13 +428,12 @@ const render = {
     const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
     
     const left = el("div",{},[
-      el("div",{style:"font-weight:700; font-size:1.1rem; color:var(--unam-blue)"}, d.title),
+      el("div",{style:"font-weight:700;font-size:1.1rem; color:var(--unam-blue)"}, d.title),
       el("div",{className:"muted"}, `${d.author_name||'Anónimo'} • ${d.category||'Gral'} • ${d.ext.toUpperCase()}`),
-      el("div",{className:"pill", style:"margin-top:0.4rem; background:#eff6ff; color:var(--unam-blue); border:none;"}, d.tags?.join(", ") || "Sin etiquetas")
+      el("div",{className:"pill", style:"margin-top:0.4rem; background:#eff6ff; color:var(--unam-blue);"}, d.tags?.join(", ") || "Sin etiquetas")
     ]);
 
     const actions = el("div",{className:"grid", style:"justify-items:end; gap:0.5rem"});
-    
     if(d.status === 'approved' || opts.mine){
       actions.append(el("a", {href: pub.publicUrl, target:"_blank", className:"pill", style:"background:var(--unam-gold); color:black; text-decoration:none; cursor:pointer;"}, "⬇ Descargar"));
     }
@@ -513,24 +462,20 @@ const render = {
       const cmtSection = el("div", {style:"grid-column:1/-1; margin-top:1rem; border-top:1px dashed #e5e7eb; padding-top:1rem"});
       const cmtList = el("div", {className:"grid", style:"gap:0.8rem; margin-bottom:0.8rem;"});
       const cmtForm = el("div",{className:"flex"},[
-        el("input",{id:`cmt-${d.id}`, placeholder: state.user ? "Agrega un comentario..." : "Inicia sesión para comentar", disabled: !state.user, style:"flex:1"}),
+        el("input",{id:`cmt-${d.id}`, placeholder: state.user ? "Comentario..." : "Inicia sesión para comentar", disabled: !state.user, style:"flex:1"}),
         el("button",{
-          textContent:"Comentar",
+          textContent:"Enviar",
           disabled: !state.user,
-          style: !state.user ? "opacity:0.5; cursor:not-allowed; background:gray;" : "",
+          style: !state.user ? "opacity:0.5; background:gray;" : "",
           onclick: async () => {
             if(!state.user) return;
             const txt = qs(`#cmt-${d.id}`).value.trim();
             if(!txt) return;
-            await supabase.from("comments").insert({
-              doc_id: d.id, user_id: state.user.id, author_name: state.user.email.split('@')[0], body: txt
-            });
-            loadComments();
-            qs(`#cmt-${d.id}`).value = "";
+            await supabase.from("comments").insert({ doc_id: d.id, user_id: state.user.id, author_name: state.user.email.split('@')[0], body: txt });
+            loadComments(); qs(`#cmt-${d.id}`).value = "";
           }
         })
       ]);
-
       async function loadComments(){
         cmtList.innerHTML = "";
         const { data } = await supabase.from("comments").select("*").eq("doc_id", d.id).order("created_at",{ascending:false});
@@ -551,38 +496,34 @@ const render = {
   modCard(d){
     const row = el("div", {className:"doc"});
     const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(d.storage_path);
-    
     const info = el("div", {}, [
       el("div", {style:"font-weight:bold; color:var(--unam-blue)"}, d.title),
       el("div", {className:"muted"}, `Subido por: ${d.email || '?'}`),
-      el("div", {className:"muted"}, `Tags: ${d.tags?.join(", ")}`),
-      el("a", {href: pub.publicUrl, target:"_blank", style:"color:var(--unam-gold); font-weight:bold; text-decoration:underline;"}, "📂 Revisar Documento")
+      el("a", {href: pub.publicUrl, target:"_blank", style:"color:var(--unam-gold); font-weight:bold; text-decoration:underline;"}, "📂 Revisar")
     ]);
-
     const actions = el("div", {className:"grid"}, [
       el("button", {
         textContent: "✅ Aprobar",
         onclick: async () => {
-          if(!confirm("¿Aprobar y publicar?")) return;
+          if(!confirm("¿Aprobar?")) return;
           const oldPath = d.storage_path; 
           const fileName = oldPath.split("/").pop(); 
           const newPath = `public/${d.id}_${fileName}`; 
           const { error: moveErr } = await supabase.storage.from(BUCKET).move(oldPath, newPath);
-          if(moveErr) return alert("Error moviendo archivo: " + moveErr.message);
+          if(moveErr) return alert("Error storage: " + moveErr.message);
           
           await supabase.from("documents").update({ status: 'approved', storage_path: newPath, reject_reason: null }).eq("id", d.id);
-          await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type: 'accepted', message: `Tu documento "${d.title}" ha sido aprobado.` });
+          await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type: 'accepted', message: `Aprobado: "${d.title}"` });
           pages.queue(); 
         }
       }),
       el("div", {className:"flex"}, [
         el("input", {id:`reason-${d.id}`, placeholder:"Razón de rechazo"}),
         el("button", {
-          textContent: "❌ Rechazar",
-          style: "background: var(--err); color:white;",
+          textContent: "❌ Rechazar", style: "background: var(--err); color:white;",
           onclick: async () => {
             const reason = qs(`#reason-${d.id}`).value.trim();
-            if(!reason) return alert("Escribe el motivo.");
+            if(!reason) return alert("Escribe motivo.");
             await supabase.from("documents").update({ status: 'rejected', reject_reason: reason }).eq("id", d.id);
             await supabase.from("notifications").insert({ user_id: d.owner, doc_id: d.id, type: 'rejected', message: `Rechazado: ${reason}` });
             pages.queue();
@@ -595,7 +536,7 @@ const render = {
   }
 };
 
-/*** UPLOAD ***/
+/*** SUBIDA ***/
 const upload = {
   async submit(){
     if(!state.user) return alert("Inicia sesión.");
@@ -620,7 +561,7 @@ const upload = {
     });
 
     if(dbErr) return alert(dbErr.message);
-    alert("¡Documento enviado a revisión!");
+    alert("¡Enviado a revisión!");
     qs("#u_msg").textContent = ""; qs("#u_title").value = ""; qs("#u_file").value = "";
     ui.show("mine");
   }
@@ -633,7 +574,7 @@ const upload = {
   qs("#btn-magic").onclick = authActions.magicLink;
   qs("#btn-logout").onclick = authActions.signOut;
   qs("#btn-upload").onclick = upload.submit;
-  qs("#btn-mod").onclick = () => state.isModerator ? ui.show("moderation") : alert("Acceso denegado.");
+  // CORRECCIÓN: Eliminado el listener del botón #btn-mod que ya no existe
 
   state.init().then(() => pages.search());
 })();
